@@ -1,0 +1,84 @@
+.root {
+  position: fixed;
+  inset: 0;
+  z-index: 70;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+
+.backdrop {
+  position: absolute;
+  inset: 0;
+  background: var(--backdrop);
+  opacity: 0;
+  transition: opacity 0.16s ease;
+}
+
+.alert {
+  position: relative;
+  width: min(290px, 100%);
+  border-radius: 14px;
+  overflow: hidden;
+  background: var(--surface-raised);
+  box-shadow: var(--shadow);
+  text-align: center;
+  opacity: 0;
+  transform: scale(1.08);
+  transition: opacity 0.16s ease, transform 0.16s ease;
+}
+
+.visible .backdrop,
+.visible .alert {
+  opacity: 1;
+}
+
+.visible .alert {
+  transform: scale(1);
+}
+
+.text {
+  padding: 20px 16px 16px;
+}
+
+.title {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.message {
+  margin: 4px 0 0;
+  font-size: 13px;
+  line-height: 1.35;
+}
+
+.actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  border-top: 0.5px solid var(--separator);
+}
+
+.action {
+  min-height: 46px;
+  color: var(--accent);
+  font-size: 17px;
+}
+
+.action + .action {
+  border-left: 0.5px solid var(--separator);
+}
+
+.action:active {
+  background: var(--fill);
+}
+
+.primary {
+  font-weight: 600;
+}
+
+.destructive {
+  color: var(--danger);
+}

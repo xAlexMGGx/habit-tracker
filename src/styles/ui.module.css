@@ -1,0 +1,208 @@
+/* Shared building blocks: iOS-style grouped lists, form rows and buttons. */
+
+.page {
+  padding: 0 0 calc(var(--tabbar-h) + var(--safe-bottom) + 32px);
+  padding-left: var(--safe-left);
+  padding-right: var(--safe-right);
+}
+
+.pageNoTabs {
+  padding: 0 0 calc(var(--safe-bottom) + 32px);
+  padding-left: var(--safe-left);
+  padding-right: var(--safe-right);
+}
+
+.section {
+  margin: 0 0 28px;
+}
+
+.sectionTitle {
+  margin: 0 calc(var(--gutter) + 16px) 6px;
+  font-size: 13px;
+  font-weight: 400;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  color: var(--text-2);
+}
+
+.sectionFooter {
+  margin: 6px calc(var(--gutter) + 16px) 0;
+  font-size: 13px;
+  color: var(--text-2);
+}
+
+.group {
+  margin: 0 var(--gutter);
+  background: var(--surface);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+.row {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 48px;
+  padding: 10px 16px;
+  width: 100%;
+  text-align: left;
+}
+
+.row + .row::before,
+.row + .rowButton::before,
+.rowButton + .row::before,
+.rowButton + .rowButton::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 16px;
+  right: 0;
+  border-top: 0.5px solid var(--separator);
+}
+
+.rowButton {
+  composes: row;
+}
+
+.rowButton:active:not(:disabled) {
+  background: var(--fill);
+}
+
+.rowLabel {
+  flex: 1;
+  min-width: 0;
+}
+
+.rowValue {
+  color: var(--text-2);
+  text-align: right;
+}
+
+.rowInput {
+  flex: 1;
+  min-width: 0;
+  border: none;
+  background: transparent;
+  padding: 4px 0;
+  outline: none;
+  text-align: right;
+}
+
+.rowInput.left {
+  text-align: left;
+}
+
+.textInput {
+  display: block;
+  width: 100%;
+  border: none;
+  outline: none;
+  background: var(--surface);
+  border-radius: var(--radius);
+  padding: 14px 16px;
+}
+
+.danger {
+  color: var(--danger);
+}
+
+.muted {
+  color: var(--text-2);
+}
+
+.error {
+  margin: 8px calc(var(--gutter) + 4px) 0;
+  font-size: 14px;
+  color: var(--danger);
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 50px;
+  padding: 0 20px;
+  border-radius: var(--radius);
+  font-weight: 600;
+  background: var(--accent);
+  color: var(--accent-contrast);
+  transition: opacity 0.15s;
+}
+
+.btn:active:not(:disabled) {
+  opacity: 0.75;
+}
+
+.btn:disabled {
+  opacity: 0.45;
+}
+
+.btnBlock {
+  composes: btn;
+  display: flex;
+  width: 100%;
+}
+
+.btnSecondary {
+  composes: btn;
+  background: var(--fill);
+  color: var(--accent);
+}
+
+.btnPlain {
+  color: var(--accent);
+  padding: 8px;
+  min-height: 44px;
+  font-size: 17px;
+}
+
+.btnPlain:disabled {
+  opacity: 0.4;
+}
+
+.iconBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 20px;
+  color: var(--accent);
+}
+
+.iconBtn:active {
+  background: var(--fill);
+}
+
+.empty {
+  margin: 40px var(--gutter);
+  text-align: center;
+  color: var(--text-2);
+}
+
+.empty p {
+  margin: 4px 0;
+}
+
+.spinnerWrap {
+  display: flex;
+  justify-content: center;
+  padding: 32px;
+}
+
+.spinner {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  border: 3px solid var(--fill-2);
+  border-top-color: var(--text-2);
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

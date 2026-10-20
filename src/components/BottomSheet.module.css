@@ -1,0 +1,86 @@
+.root {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+}
+
+.backdrop {
+  position: absolute;
+  inset: 0;
+  background: var(--backdrop);
+  opacity: 0;
+  transition: opacity 0.22s ease;
+}
+
+.panel {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: var(--kb, 0px);
+  max-height: calc(100dvh - var(--safe-top) - 24px - var(--kb, 0px));
+  display: flex;
+  flex-direction: column;
+  background: var(--surface-2);
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  box-shadow: var(--shadow);
+  padding-bottom: max(12px, var(--safe-bottom));
+  transform: translateY(100%);
+  transition: transform 0.24s cubic-bezier(0.32, 0.72, 0, 1), bottom 0.1s;
+}
+
+.visible .backdrop {
+  opacity: 1;
+}
+
+.visible .panel {
+  transform: translateY(0);
+}
+
+.grabber {
+  flex: none;
+  width: 36px;
+  height: 5px;
+  border-radius: 3px;
+  background: var(--fill-2);
+  margin: 6px auto 0;
+}
+
+.head {
+  flex: none;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 10px var(--gutter) 6px;
+}
+
+.headText {
+  flex: 1;
+  min-width: 0;
+}
+
+.title {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 700;
+  overflow-wrap: anywhere;
+}
+
+.subtitle {
+  margin: 2px 0 0;
+  font-size: 14px;
+  color: var(--text-2);
+}
+
+.close {
+  flex: none;
+  color: var(--accent);
+  font-weight: 600;
+  padding: 4px 0 4px 8px;
+  min-height: 32px;
+}
+
+.body {
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 8px 0 8px;
+}

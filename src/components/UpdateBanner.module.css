@@ -1,0 +1,22 @@
+.banner {
+  position: fixed;
+  left: var(--gutter);
+  right: var(--gutter);
+  top: calc(var(--safe-top) + 8px);
+  z-index: 85;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 16px;
+  border-radius: 14px;
+  background: var(--accent);
+  color: #fff;
+  font-size: 15px;
+  box-shadow: var(--shadow);
+}
+
+.action {
+  font-weight: 700;
+  text-decoration: underline;
+}

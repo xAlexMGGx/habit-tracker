@@ -1,0 +1,25 @@
+.soon {
+  margin: 32px var(--gutter);
+  padding: 36px 24px;
+  border-radius: var(--radius-lg);
+  text-align: center;
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--habit-purple) 18%, var(--surface)),
+    color-mix(in srgb, var(--habit-orange) 18%, var(--surface))
+  );
+}
+
+.icon {
+  color: var(--habit-purple);
+}
+
+.title {
+  margin: 12px 0 6px;
+  font-size: 22px;
+}
+
+.body {
+  margin: 0;
+  color: var(--text-2);
+}

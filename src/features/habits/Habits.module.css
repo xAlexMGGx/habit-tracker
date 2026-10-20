@@ -1,0 +1,163 @@
+/* Mis hábitos: minimal and intuitive. */
+
+.habitRow {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-right: 4px;
+  background: var(--surface);
+}
+
+.dragging {
+  z-index: 2;
+  box-shadow: var(--shadow);
+  border-radius: var(--radius);
+}
+
+.habitLink {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: inherit;
+  text-decoration: none;
+}
+
+.habitText {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.habitName {
+  font-weight: 500;
+  overflow-wrap: anywhere;
+}
+
+.habitSummary {
+  font-size: 14px;
+  color: var(--text-2);
+}
+
+.handle {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  color: var(--text-3);
+  touch-action: none;
+  cursor: grab;
+}
+
+.archivedToggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin: 0 calc(var(--gutter) + 12px) 8px;
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  color: var(--text-2);
+  min-height: 32px;
+}
+
+.archivedRow {
+  padding-right: 4px;
+}
+
+.restore {
+  color: var(--accent);
+  font-size: 15px;
+  font-weight: 500;
+  padding: 8px;
+}
+
+/* Form */
+.saveBtn {
+  font-weight: 600;
+}
+
+.preview {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  margin: 0 var(--gutter) 24px;
+}
+
+.previewName {
+  font-size: 20px;
+  font-weight: 600;
+  text-align: center;
+  overflow-wrap: anywhere;
+}
+
+.padded {
+  padding: 14px 16px;
+}
+
+.inset {
+  margin: 0 var(--gutter);
+}
+
+.frequencyOptions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0 var(--gutter);
+}
+
+.chip {
+  min-height: 36px;
+  padding: 0 14px;
+  border-radius: 18px;
+  background: var(--surface);
+  font-size: 15px;
+}
+
+.chipOn {
+  background: var(--accent);
+  color: var(--accent-contrast);
+  font-weight: 600;
+}
+
+.frequencyDetail {
+  margin-top: 12px;
+}
+
+.column {
+  flex-direction: column;
+  align-items: stretch;
+}
+
+.fieldLabel {
+  margin: 0 0 10px;
+  font-size: 15px;
+  color: var(--text-2);
+}
+
+.column .fieldLabel {
+  margin-bottom: 4px;
+}
+
+.dateInput {
+  -webkit-appearance: none;
+  appearance: none;
+  min-height: 32px;
+  color: var(--accent);
+}
+
+.radio {
+  flex: none;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 2px solid var(--text-3);
+}
+
+.radioOn {
+  border: 7px solid var(--accent);
+}

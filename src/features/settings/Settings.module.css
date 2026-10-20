@@ -1,0 +1,46 @@
+.back {
+  display: inline-flex;
+  align-items: center;
+  margin-left: -6px;
+  padding-left: 0;
+}
+
+.email {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.rowIcon {
+  color: var(--accent);
+}
+
+.inset {
+  margin: 0 var(--gutter);
+}
+
+.exportButtons {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin: 0 var(--gutter);
+}
+
+.sheetForm {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 0 var(--gutter);
+}
+
+.flush {
+  margin: 0 4px;
+}
+
+.version {
+  margin: 8px 0 0;
+  text-align: center;
+  font-size: 13px;
+  color: var(--text-3);
+}

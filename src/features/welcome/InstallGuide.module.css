@@ -1,0 +1,78 @@
+.root {
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  padding: calc(var(--safe-top) + 40px) 28px calc(var(--safe-bottom) + 20px);
+  background: var(--bg);
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  max-width: 420px;
+}
+
+.logo {
+  width: 84px;
+  height: 84px;
+  border-radius: 19px;
+  box-shadow: var(--shadow);
+}
+
+.title {
+  margin: 20px 0 8px;
+  font-size: 28px;
+  font-weight: 700;
+}
+
+.intro {
+  margin: 0 0 24px;
+  color: var(--text-2);
+}
+
+.steps {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  border-radius: var(--radius);
+  background: var(--surface);
+  text-align: left;
+}
+
+.step {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 16px;
+}
+
+.step + .step {
+  border-top: 0.5px solid var(--separator);
+}
+
+.stepIcon {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  background: var(--fill);
+  color: var(--accent);
+}
+
+.note {
+  margin: 16px 0 0;
+  font-size: 14px;
+  color: var(--text-2);
+}

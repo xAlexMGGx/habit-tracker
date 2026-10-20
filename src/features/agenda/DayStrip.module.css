@@ -1,0 +1,77 @@
+.viewport {
+  overflow: hidden;
+  touch-action: pan-y;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+.track {
+  display: flex;
+  width: 300%;
+  will-change: transform;
+}
+
+.week {
+  flex: 0 0 calc(100% / 3);
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  padding: 0 calc(var(--gutter) - 6px);
+}
+
+.day {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 0 2px;
+}
+
+.weekday {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-2);
+}
+
+.number {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  font-size: 18px;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  transition: background 0.15s, color 0.15s;
+}
+
+.today .number {
+  color: var(--accent);
+  font-weight: 700;
+}
+
+.selected .number {
+  background: var(--text);
+  color: var(--bg);
+  font-weight: 700;
+}
+
+.selected.today .number {
+  background: var(--accent);
+  color: var(--accent-contrast);
+}
+
+.dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+}
+
+.dotOn {
+  background: var(--text-3);
+}
+
+.today .dotOn,
+.selected .dotOn {
+  background: var(--accent);
+}

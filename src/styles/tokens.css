@@ -1,0 +1,91 @@
+:root {
+  color-scheme: light dark;
+
+  /* Surfaces & text (iOS system colors) */
+  --bg: #f2f2f7;
+  --surface: #ffffff;
+  --surface-2: #f2f2f7;
+  --surface-raised: #ffffff;
+  --text: #000000;
+  --text-2: rgba(60, 60, 67, 0.62);
+  --text-3: rgba(60, 60, 67, 0.32);
+  --separator: rgba(60, 60, 67, 0.2);
+  --fill: rgba(120, 120, 128, 0.12);
+  --fill-2: rgba(120, 120, 128, 0.2);
+  --backdrop: rgba(0, 0, 0, 0.32);
+  --bar-bg: rgba(249, 249, 249, 0.86);
+  --segment-active: #ffffff;
+
+  --accent: #007aff;
+  --accent-contrast: #ffffff;
+  --danger: #ff3b30;
+  --success: #34c759;
+  --warning: #ff9500;
+
+  /* Habit palette — keys stored in habits.color */
+  --habit-red: #ff3b30;
+  --habit-orange: #ff9500;
+  --habit-yellow: #ffcc00;
+  --habit-green: #34c759;
+  --habit-mint: #00c7be;
+  --habit-teal: #30b0c7;
+  --habit-cyan: #32ade6;
+  --habit-blue: #007aff;
+  --habit-indigo: #5856d6;
+  --habit-purple: #af52de;
+  --habit-pink: #ff2d55;
+  --habit-brown: #a2845e;
+
+  --radius-sm: 8px;
+  --radius: 12px;
+  --radius-lg: 18px;
+  --shadow: 0 6px 24px rgba(0, 0, 0, 0.12);
+
+  --font: -apple-system, BlinkMacSystemFont, 'SF Pro Text', system-ui, 'Segoe UI', Roboto, 'Helvetica Neue', Arial,
+    sans-serif;
+
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-left: env(safe-area-inset-left, 0px);
+  --safe-right: env(safe-area-inset-right, 0px);
+  --tabbar-h: 54px;
+  --gutter: 16px;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #000000;
+    --surface: #1c1c1e;
+    --surface-2: #2c2c2e;
+    --surface-raised: #2c2c2e;
+    --text: #ffffff;
+    --text-2: rgba(235, 235, 245, 0.62);
+    --text-3: rgba(235, 235, 245, 0.3);
+    --separator: rgba(84, 84, 88, 0.6);
+    --fill: rgba(120, 120, 128, 0.24);
+    --fill-2: rgba(120, 120, 128, 0.36);
+    --backdrop: rgba(0, 0, 0, 0.55);
+    --bar-bg: rgba(22, 22, 24, 0.86);
+    --segment-active: #636366;
+
+    --accent: #0a84ff;
+    --danger: #ff453a;
+    --success: #30d158;
+    --warning: #ff9f0a;
+
+    --habit-red: #ff453a;
+    --habit-orange: #ff9f0a;
+    --habit-yellow: #ffd60a;
+    --habit-green: #30d158;
+    --habit-mint: #63e6e2;
+    --habit-teal: #40cbe0;
+    --habit-cyan: #64d2ff;
+    --habit-blue: #0a84ff;
+    --habit-indigo: #5e5ce6;
+    --habit-purple: #bf5af2;
+    --habit-pink: #ff375f;
+    --habit-brown: #ac8e68;
+
+    --shadow: 0 6px 24px rgba(0, 0, 0, 0.5);
+  }
+}
