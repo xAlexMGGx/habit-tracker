@@ -4,7 +4,9 @@ import { effectiveViz } from '../../lib/vizConfig'
 import { Bars } from './Bars'
 import { DaysSince } from './DaysSince'
 import { Heatmap } from './Heatmap'
+import { MarbleJar } from './MarbleJar'
 import { MonthCalendar } from './MonthCalendar'
+import { Plant } from './Plant'
 import { Ring } from './Ring'
 import type { VizProps } from './types'
 
@@ -23,8 +25,10 @@ export function HabitViz({ viz, ...props }: VizProps & { viz?: VizType }) {
         return <Bars {...props} />
       case 'days_since':
         return <DaysSince {...props} />
-      default:
-        return <Heatmap {...props} />
+      case 'marble_jar':
+        return <MarbleJar {...props} />
+      case 'plant':
+        return <Plant {...props} />
     }
   })()
   return <div style={habitColorStyle(props.habit.color)}>{view}</div>

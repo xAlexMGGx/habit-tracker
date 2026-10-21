@@ -88,8 +88,36 @@ Complementa a [SPEC.md](../SPEC.md). Cada punto se acordó con el usuario o es u
 - **Detalle:**
   - Chips "Ver como" con las visualizaciones compatibles; ★ marca la elegida.
   - Cambiar de visualización, o el periodo del anillo y el rango de las barras, ahí solo sirve para mirar: no se guarda.
-- **Tarro y planta:** no se ofrecen en el formulario hasta la fase 3. Si un hábito ya los tenía elegidos, se dibuja con la visualización por defecto de su tipo hasta entonces.
 - **Formulario:**
   - Vista previa de la visualización elegida con datos de ejemplo parecidos al hábito.
   - Mientras no eliges una a mano, la visualización sigue al tipo de hábito.
 - **Guía "?":** botón en Mis hábitos (empieza en la primera página) y junto al selector del formulario (empieza en la visualización elegida). Los ejemplos se dibujan con los mismos componentes y datos generados.
+
+## Tarro de canicas (fase 3)
+
+- **Canicas:**
+  - Sí/no: una canica por cada día cumplido, también los días no previstos en "X veces por semana".
+  - Cuantitativos: la cantidad **se acumula entre días** y se divide por el valor de la canica (5,5 km + 2,5 km = 8 canicas a 1 km cada una). Si no se indica valor, **una canica = la meta diaria**.
+  - Fallar nunca resta canicas.
+- **Periodos naturales:** semana (de lunes a domingo), mes, trimestre (ene-mar, abr-jun…) y año. Por defecto, mes.
+- **Capacidad:**
+  - "Todos los días que toca" (100 %), "Casi todos" (80 %) o un número personalizado.
+  - Las dos sugeridas se recalculan en cada periodo con los días en que toca el hábito: 28-31 en los meses, 7 en una semana diaria, 365 en un año diario. En "X veces por semana" se usa X × días/7, que da unas 13 al mes con 3 por semana.
+  - En los cuantitativos, la capacidad se expresa en canicas: días que toca × meta / valor de la canica.
+  - En el periodo en que empieza el hábito, la capacidad sugerida solo cuenta los días desde la fecha de inicio.
+- **Lleno antes de tiempo:** el tarro se ve lleno, con una etiqueta "+N" en la tapa y el texto "¡Lleno! +N canicas extra".
+- **Estantería:**
+  - En el detalle (y en la guía) se ve una cuadrícula de 4×3 con los 12 últimos periodos terminados, del más antiguo al más reciente.
+  - Los periodos anteriores al inicio del hábito aparecen como huecos punteados.
+  - Todo se calcula a partir de los registros: si editas el pasado o cambias el periodo o la capacidad, la estantería se recalcula.
+- **Dibujo:** el tamaño de las canicas se ajusta para que quepa la capacidad completa, así que con 365 son muy pequeñas.
+
+## Planta (fase 3)
+
+- **Constantes en [src/lib/plant.ts](../src/lib/plant.ts):**
+  - ventana de 14 días que tocaba;
+  - umbrales del 20 / 40 / 60 / 80 % para brote, planta joven, planta y flor;
+  - se marchita con 3 fallos seguidos.
+- **Qué cuenta:** hoy, mientras está pendiente, no cuenta. En los cuantitativos, un día solo cuenta si se llega a la meta. Si el hábito tiene menos de 14 días que tocaban, se usan los que haya; sin ninguno, es una semilla.
+- **Mustia:** la fase sigue dependiendo del %. La planta mustia tiene el tallo doblado y las hojas caídas y marrones, y revive con el siguiente día cumplido.
+- **Detalle:** se muestra el progreso por fases y el % necesario para la siguiente.

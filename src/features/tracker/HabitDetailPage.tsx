@@ -11,6 +11,7 @@ import { useToday } from '../../hooks/useToday'
 import { useDateLocale } from '../../i18n'
 import type { Habit, VizType } from '../../lib/database.types'
 import { frequencySummary, targetSummary } from '../../lib/format'
+import type { JarPeriod } from '../../lib/jar'
 import { formatPercent, habitColorStyle } from '../../lib/habitMeta'
 import { habitsForDay, logsFor } from '../../lib/schedule'
 import { type Rate, computeStats } from '../../lib/stats'
@@ -82,6 +83,18 @@ function Detail({ habit }: { habit: Habit }) {
                 { value: '7', label: t('viz.lastDays', { count: 7 }) },
                 { value: '30', label: t('viz.lastDays', { count: 30 }) },
               ]}
+            />
+          </div>
+        ) : null}
+        {viz === 'marble_jar' ? (
+          <div className={s.params}>
+            <Segmented<JarPeriod>
+              value={config.jarPeriod}
+              onChange={(jarPeriod) => setConfig((c) => ({ ...c, jarPeriod }))}
+              options={(['week', 'month', 'quarter', 'year'] as const).map((p) => ({
+                value: p,
+                label: t(`habits.fields.jarPeriods.${p}`),
+              }))}
             />
           </div>
         ) : null}

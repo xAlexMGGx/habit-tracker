@@ -14,7 +14,8 @@ function mulberry32(seed: number) {
   }
 }
 
-const SAMPLE_DAYS = 200
+// A bit over a year, so the jar's shelf has a full row of past months.
+const SAMPLE_DAYS = 380
 
 /** A full habit row for previews: fills in the fields the visualizations don't care about. */
 export function sampleHabit(today: DateStr, overrides: Partial<Habit>): Habit {
@@ -67,7 +68,8 @@ export function sampleLogs(habit: Habit, today: DateStr, seed = 7): Map<DateStr,
     }
     if (date === today) continue
     const planned = isPlannedOn({ ...habit, start_date: start }, date)
-    const chance = recent ? 0.95 : planned ? 0.78 : 0.08
+    // The recent good run only applies to planned days (a 3-times-a-week jar stays half full).
+    const chance = planned ? (recent ? 0.95 : 0.78) : 0.08
     if (r > chance) {
       if (habit.type === 'quantitative' && r < chance + 0.12) logs.set(date, Math.max(1, Math.round(target * 0.5)))
       continue
@@ -83,10 +85,13 @@ export function sampleLogs(habit: Habit, today: DateStr, seed = 7): Map<DateStr,
 }
 
 /** Example habits used by the visualization guide (names come from the translation files). */
-export const GUIDE_SAMPLES: Record<Exclude<VizType, 'marble_jar' | 'plant'>, Partial<Habit>> = {
+export const GUIDE_SAMPLES: Record<VizType, Partial<Habit>> = {
   heatmap: { type: 'boolean', icon: '🧘', color: 'purple' },
-  calendar: { type: 'boolean', icon: '🏋️', color: 'orange', frequency_type: 'times_per_week', frequency_times: 3, frequency_days: [1, 3, 5] },
+  calendar: { type: 'boolean', icon: '🧹', color: 'teal', frequency_type: 'weekdays', frequency_days: [2, 4, 6] },
   ring: { type: 'boolean', icon: '📚', color: 'green', frequency_type: 'weekdays', frequency_days: [1, 2, 3, 4, 5] },
   bars: { type: 'quantitative', icon: '💧', color: 'cyan', target: 8 },
   days_since: { type: 'negative', icon: '🚭', color: 'red' },
+  // SPEC §8: "tarro a medio llenar de «Ir al gimnasio»"
+  marble_jar: { type: 'boolean', icon: '🏋️', color: 'orange', frequency_type: 'times_per_week', frequency_times: 3, frequency_days: [1, 3, 5] },
+  plant: { type: 'boolean', icon: '🎸', color: 'pink' },
 }

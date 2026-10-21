@@ -25,7 +25,8 @@
     "longDayYear": "EEEE, d 'de' MMMM 'de' yyyy",
     "shortDay": "EEE d MMM",
     "shortDayYear": "d MMM yyyy",
-    "weekdayShort": "EEE"
+    "weekdayShort": "EEE",
+    "dayMonth": "d MMM"
   },
   "weekdays": {
     "initials": [
@@ -182,7 +183,22 @@
       "vizPreview": "Vista previa con datos de ejemplo",
       "ringPeriod": "Periodo",
       "barsRange": "Días que se ven",
-      "vizSoon": "Esta visualización llegará pronto. Mientras tanto se muestra con la de por defecto."
+      "jarPeriod": "El tarro se renueva cada",
+      "jarPeriods": {
+        "week": "Semana",
+        "month": "Mes",
+        "quarter": "Trimestre",
+        "year": "Año"
+      },
+      "jarCapacity": "Capacidad del tarro",
+      "capacity_all": "Todos los días que toca",
+      "capacity_most": "Casi todos (80 %)",
+      "capacity_custom": "Personalizada",
+      "marbles_one": "{{count}} canica",
+      "marbles_other": "{{count}} canicas",
+      "jarMarbleValue": "Cada canica vale",
+      "jarMarbleHint": "Si lo dejas vacío, una canica vale tu meta diaria.",
+      "jarCapacityHint": "Las capacidades sugeridas se ajustan solas en cada periodo (p. ej. de 28 a 31 en los meses)."
     },
     "types": {
       "boolean": "Sí/no",
@@ -224,7 +240,8 @@
       "selectExactly_one": "Elige exactamente {{count}} día.",
       "selectExactly_other": "Elige exactamente {{count}} días.",
       "intervalRange": "Entre 2 y 365 días.",
-      "startDateRequired": "Indica la fecha de inicio."
+      "startDateRequired": "Indica la fecha de inicio.",
+      "capacityRequired": "Indica una capacidad de al menos 1 canica."
     }
   },
   "colors": {
@@ -323,6 +340,31 @@
       "done": "Cumplido",
       "partial": "Parcial",
       "missed": "Fallado"
+    },
+    "jar": {
+      "weekOf": "Semana del {{date}}",
+      "weekShort": "S{{n}}",
+      "quarter": "{{n}}.º trimestre {{year}}",
+      "quarterShort": "T{{n}}·{{yy}}",
+      "extra_one": "¡Lleno! +{{count}} canica extra",
+      "extra_other": "¡Lleno! +{{count}} canicas extra",
+      "marbleValue": "1 canica = {{value}} {{unit}}",
+      "nextMarble": "{{pct}} de la siguiente",
+      "shelf": "Estantería"
+    },
+    "plant": {
+      "phases": {
+        "seed": "Semilla",
+        "sprout": "Brote",
+        "young": "Planta joven",
+        "plant": "Planta",
+        "flower": "Flor"
+      },
+      "window": "{{pct}} en los últimos {{days}} días que tocaba",
+      "wiltedShort": "mustia",
+      "wiltedHint": "Cumple el próximo día que toque y revivirá.",
+      "next": "Siguiente fase: {{phase}} al {{pct}}",
+      "bloom": "¡En flor! Mantén el ritmo para que siga así."
     }
   },
   "guide": {
@@ -339,7 +381,7 @@
       "ideal": "Hábitos diarios o casi diarios: meditar, beber agua, no fumar."
     },
     "calendar": {
-      "example": "Ir al gimnasio",
+      "example": "Limpiar la casa",
       "read": "Un mes completo. Círculo de color: cumplido. Círculo con borde: parcial (cuantitativos) o pendiente hoy. Gris: fallado. Número tenue: ese día no tocaba. En el detalle puedes pasar de un mes a otro.",
       "purpose": "Repasar meses concretos y descubrir qué días de la semana te cuestan más.",
       "ideal": "Hábitos de días concretos o de X veces por semana: gimnasio, clases, limpiar la casa."
@@ -361,6 +403,18 @@
       "read": "El número grande son los días seguidos sin recaídas que ya has completado: hoy cuenta cuando termina. Debajo, tu récord.",
       "purpose": "Ver crecer el número motiva a no tener que volver a empezar de cero.",
       "ideal": "Hábitos negativos: no fumar, no tomar refrescos, no morderse las uñas."
+    },
+    "marble_jar": {
+      "example": "Ir al gimnasio",
+      "read": "Cada vez que cumples, cae una canica en el tarro; en los cuantitativos, una por cada cantidad que elijas (p. ej. 1 canica = 1 km), sumando lo de varios días. Fallar nunca quita canicas. Si lo llenas antes de tiempo, verás las canicas extra. Al acabar el periodo (semana, mes, trimestre o año) el tarro pasa a la estantería, donde ves los 12 últimos.",
+      "purpose": "Ver crecer lo que llevas acumulado sin miedo a perderlo: un mal día no estropea el tarro.",
+      "ideal": "Hábitos sí/no o cuantitativos que no tienen por qué ser diarios: gimnasio, kilómetros corridos, libros leídos."
+    },
+    "plant": {
+      "example": "Practicar guitarra",
+      "read": "La planta crece según cuántos de los últimos 14 días que tocaba cumpliste: semilla, brote (20 %), planta joven (40 %), planta (60 %) y flor (80 %). Si fallas 3 días seguidos se pone mustia, pero nunca muere: revive en cuanto vuelves a cumplir. En los cuantitativos, el día cuenta si llegas a la meta.",
+      "purpose": "Premiar la constancia reciente: lo que cuenta es cómo vas ahora, no lo que hiciste hace meses.",
+      "ideal": "Hábitos sí/no o cuantitativos que quieres mantener vivos: practicar un instrumento, estudiar, regar las plantas."
     }
   }
 }

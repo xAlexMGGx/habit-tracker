@@ -8,13 +8,13 @@ import { ColorPicker, EmojiPicker, HabitIcon, Segmented, Spinner, Stepper, Weekd
 import { useCreateHabit, useHabits, useSetArchived, useUpdateHabit } from '../../data/habits'
 import { useToday } from '../../hooks/useToday'
 import type { FrequencyType, Habit, HabitType, VizType } from '../../lib/database.types'
-import { DEFAULT_VIZ, HABIT_TYPES, VIZ_BY_TYPE, frequenciesFor } from '../../lib/habitMeta'
+import { DEFAULT_VIZ, HABIT_TYPES, frequenciesFor } from '../../lib/habitMeta'
+import { type JarPeriod, periodEnd, periodStart, suggestedCapacity } from '../../lib/jar'
 import { newId } from '../../lib/platform'
 import { sampleHabit, sampleLogs } from '../../lib/sampleData'
 import { showToast } from '../../lib/toast'
 import {
   type BarsRange,
-  IMPLEMENTED_VIZ,
   type RingPeriod,
   type VizConfig,
   availableViz,
@@ -41,13 +41,41 @@ type FormState = {
   interval: number
   startDate: string
   viz: VizType
+  /** Ring, bars and jar period. Jar capacity and marble value are edited as text below. */
   vizConfig: VizConfig
+  capacityMode: 'all' | 'most' | 'custom'
+  customCapacity: string
+  marbleValue: string
 }
 
-type Errors = Partial<Record<'name' | 'icon' | 'target' | 'quickStep' | 'days' | 'interval' | 'startDate', string>>
+type Errors = Partial<
+  Record<'name' | 'icon' | 'target' | 'quickStep' | 'days' | 'interval' | 'startDate' | 'capacity', string>
+>
+
+const toNumber = (text: string) => Number(text.trim().replace(',', '.'))
+
+function jarFields(config: VizConfig): Pick<FormState, 'capacityMode' | 'customCapacity' | 'marbleValue'> {
+  return {
+    capacityMode: typeof config.jarCapacity === 'number' ? 'custom' : config.jarCapacity,
+    customCapacity: typeof config.jarCapacity === 'number' ? String(config.jarCapacity) : '',
+    marbleValue: config.jarMarbleValue != null ? String(config.jarMarbleValue) : '',
+  }
+}
+
+/** The visualization parameters as they will be saved. */
+function buildVizConfig(form: FormState): VizConfig {
+  const custom = Math.round(toNumber(form.customCapacity))
+  const value = toNumber(form.marbleValue)
+  return {
+    ...form.vizConfig,
+    jarCapacity: form.capacityMode === 'custom' ? (custom >= 1 ? custom : 'all') : form.capacityMode,
+    jarMarbleValue: form.type === 'quantitative' && value > 0 ? value : null,
+  }
+}
 
 function initialState(habit: Habit | null, today: string): FormState {
   if (!habit) {
+    const vizConfig = readVizConfig(null)
     return {
       name: '',
       icon: '✅',
@@ -63,9 +91,11 @@ function initialState(habit: Habit | null, today: string): FormState {
       interval: 2,
       startDate: today,
       viz: DEFAULT_VIZ.boolean,
-      vizConfig: readVizConfig(null),
+      vizConfig,
+      ...jarFields(vizConfig),
     }
   }
+  const vizConfig = readVizConfig(habit.viz_config)
   return {
     name: habit.name,
     icon: habit.icon,
@@ -81,11 +111,10 @@ function initialState(habit: Habit | null, today: string): FormState {
     interval: habit.frequency_interval ?? 2,
     startDate: habit.start_date,
     viz: habit.viz_type,
-    vizConfig: readVizConfig(habit.viz_config),
+    vizConfig,
+    ...jarFields(vizConfig),
   }
 }
-
-const toNumber = (text: string) => Number(text.trim().replace(',', '.'))
 
 function Section({ title, footer, children }: { title?: string; footer?: ReactNode; children: ReactNode }) {
   return (
@@ -135,9 +164,23 @@ function HabitForm({ habit }: { habit: Habit | null }) {
     return { habit: h, logs: sampleLogs(h, today) }
   }, [today, form.type, form.icon, form.color, form.unit, targetNumber, form.frequency, form.weekdays, form.planned, form.times, form.interval])
 
-  // A visualization from a later phase stays selectable for habits that already use it.
   const vizOptions = availableViz(form.type)
-  if (VIZ_BY_TYPE[form.type].includes(form.viz) && !vizOptions.includes(form.viz)) vizOptions.push(form.viz)
+  const vizConfig = buildVizConfig(form)
+
+  // Suggested jar capacities for a whole period (they adjust by themselves, e.g. 28–31 days).
+  const jarSuggestions = useMemo(() => {
+    const h = {
+      ...preview.habit,
+      target: form.type === 'quantitative' ? (targetNumber > 0 ? targetNumber : 1) : null,
+      start_date: '2000-01-01',
+    }
+    const start = periodStart(today, vizConfig.jarPeriod)
+    const end = periodEnd(start, vizConfig.jarPeriod)
+    return {
+      all: suggestedCapacity(h, vizConfig, start, end, 'all'),
+      most: suggestedCapacity(h, vizConfig, start, end, 'most'),
+    }
+  }, [preview.habit, form.type, targetNumber, today, vizConfig])
 
   const set = <K extends keyof FormState>(key: K, value: FormState[K]) => setForm((f) => ({ ...f, [key]: value }))
 
@@ -168,6 +211,8 @@ function HabitForm({ habit }: { habit: Habit | null }) {
     if (form.frequency === 'every_n_days' && !(form.interval >= 2 && form.interval <= 365))
       e.interval = t('habits.errors.intervalRange')
     if (!form.startDate) e.startDate = t('habits.errors.startDateRequired')
+    if (form.viz === 'marble_jar' && form.capacityMode === 'custom' && !(Math.round(toNumber(form.customCapacity)) >= 1))
+      e.capacity = t('habits.errors.capacityRequired')
     return e
   }
 
@@ -194,7 +239,7 @@ function HabitForm({ habit }: { habit: Habit | null }) {
       frequency_interval: form.frequency === 'every_n_days' ? form.interval : null,
       start_date: form.startDate,
       viz_type: form.viz,
-      viz_config: writeVizConfig(habit?.viz_config, form.vizConfig),
+      viz_config: writeVizConfig(habit?.viz_config, vizConfig),
     }
 
     try {
@@ -406,18 +451,7 @@ function HabitForm({ habit }: { habit: Habit | null }) {
 
         <div className={s.previewCard}>
           <span className={s.previewLabel}>{t('habits.fields.vizPreview')}</span>
-          {IMPLEMENTED_VIZ.includes(form.viz) ? (
-            <HabitViz
-              habit={preview.habit}
-              logs={preview.logs}
-              today={today}
-              size="regular"
-              config={form.vizConfig}
-              viz={form.viz}
-            />
-          ) : (
-            <p className={ui.muted}>{t('habits.fields.vizSoon')}</p>
-          )}
+          <HabitViz habit={preview.habit} logs={preview.logs} today={today} size="regular" config={vizConfig} viz={form.viz} />
         </div>
 
         <div className={ui.group} role="radiogroup">
@@ -472,6 +506,80 @@ function HabitForm({ habit }: { habit: Habit | null }) {
               </div>
             </div>
           </div>
+        ) : null}
+        {form.viz === 'marble_jar' ? (
+          <>
+            <div className={`${ui.group} ${s.vizParams}`}>
+              <div className={`${ui.row} ${s.column}`}>
+                <p className={s.fieldLabel}>{t('habits.fields.jarPeriod')}</p>
+                <Segmented<JarPeriod>
+                  value={form.vizConfig.jarPeriod}
+                  onChange={(jarPeriod) => set('vizConfig', { ...form.vizConfig, jarPeriod })}
+                  options={(['week', 'month', 'quarter', 'year'] as const).map((p) => ({
+                    value: p,
+                    label: t(`habits.fields.jarPeriods.${p}`),
+                  }))}
+                />
+              </div>
+            </div>
+            <h3 className={`${ui.sectionTitle} ${s.subTitle}`}>{t('habits.fields.jarCapacity')}</h3>
+            <div className={ui.group} role="radiogroup">
+              {(['all', 'most'] as const).map((mode) => (
+                <button
+                  key={mode}
+                  type="button"
+                  role="radio"
+                  aria-checked={form.capacityMode === mode}
+                  className={ui.rowButton}
+                  onClick={() => set('capacityMode', mode)}
+                >
+                  <span className={ui.rowLabel}>
+                    {t(`habits.fields.capacity_${mode}`)}
+                    <span className={s.capacityCount}>{t('habits.fields.marbles', { count: jarSuggestions[mode] })}</span>
+                  </span>
+                  <span className={`${s.radio} ${form.capacityMode === mode ? s.radioOn : ''}`} />
+                </button>
+              ))}
+              <div
+                role="radio"
+                aria-checked={form.capacityMode === 'custom'}
+                className={ui.row}
+                onClick={() => form.capacityMode !== 'custom' && set('capacityMode', 'custom')}
+              >
+                <span className={ui.rowLabel}>{t('habits.fields.capacity_custom')}</span>
+                <input
+                  className={`${ui.rowInput} ${s.capacityInput}`}
+                  inputMode="numeric"
+                  value={form.customCapacity}
+                  placeholder={String(jarSuggestions.all)}
+                  aria-label={t('habits.fields.capacity_custom')}
+                  onFocus={() => set('capacityMode', 'custom')}
+                  onChange={(e) => set('customCapacity', e.target.value.replace(/\D/g, ''))}
+                />
+                <span className={`${s.radio} ${form.capacityMode === 'custom' ? s.radioOn : ''}`} />
+              </div>
+            </div>
+            {errors.capacity ? <p className={ui.error}>{errors.capacity}</p> : null}
+            {form.type === 'quantitative' ? (
+              <div className={`${ui.group} ${s.vizParams}`}>
+                <label className={ui.row}>
+                  <span className={ui.rowLabel}>{t('habits.fields.jarMarbleValue')}</span>
+                  <input
+                    className={ui.rowInput}
+                    inputMode="decimal"
+                    value={form.marbleValue}
+                    placeholder={targetNumber > 0 ? String(targetNumber) : '1'}
+                    onChange={(e) => set('marbleValue', e.target.value.replace(/[^\d.,]/g, ''))}
+                  />
+                  {form.unit.trim() ? <span className={ui.muted}>{form.unit.trim()}</span> : null}
+                </label>
+              </div>
+            ) : null}
+            <p className={ui.sectionFooter}>
+              {form.type === 'quantitative' ? `${t('habits.fields.jarMarbleHint')} ` : ''}
+              {t('habits.fields.jarCapacityHint')}
+            </p>
+          </>
         ) : null}
         <p className={ui.sectionFooter}>{t('habits.fields.vizHint')}</p>
       </div>

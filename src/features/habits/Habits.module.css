@@ -206,6 +206,20 @@
   width: 150px;
 }
 
+.subTitle {
+  margin-top: 16px;
+}
+
+.capacityCount {
+  display: block;
+  font-size: 14px;
+  color: var(--text-2);
+}
+
+.capacityInput {
+  max-width: 80px;
+}
+
 .radio {
   flex: none;
   width: 22px;

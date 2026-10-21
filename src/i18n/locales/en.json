@@ -25,7 +25,8 @@
     "longDayYear": "EEEE, MMMM d, yyyy",
     "shortDay": "EEE, MMM d",
     "shortDayYear": "MMM d, yyyy",
-    "weekdayShort": "EEE"
+    "weekdayShort": "EEE",
+    "dayMonth": "MMM d"
   },
   "weekdays": {
     "initials": [
@@ -182,7 +183,22 @@
       "vizPreview": "Preview with sample data",
       "ringPeriod": "Period",
       "barsRange": "Days shown",
-      "vizSoon": "This visualization is coming soon. Meanwhile the default one is shown."
+      "jarPeriod": "The jar renews every",
+      "jarPeriods": {
+        "week": "Week",
+        "month": "Month",
+        "quarter": "Quarter",
+        "year": "Year"
+      },
+      "jarCapacity": "Jar capacity",
+      "capacity_all": "Every due day",
+      "capacity_most": "Almost all (80%)",
+      "capacity_custom": "Custom",
+      "marbles_one": "{{count}} marble",
+      "marbles_other": "{{count}} marbles",
+      "jarMarbleValue": "Each marble is worth",
+      "jarMarbleHint": "Leave it empty and one marble is your daily goal.",
+      "jarCapacityHint": "Suggested capacities adjust by themselves each period (e.g. 28 to 31 for months)."
     },
     "types": {
       "boolean": "Yes/no",
@@ -224,7 +240,8 @@
       "selectExactly_one": "Pick exactly {{count}} day.",
       "selectExactly_other": "Pick exactly {{count}} days.",
       "intervalRange": "Between 2 and 365 days.",
-      "startDateRequired": "Set a start date."
+      "startDateRequired": "Set a start date.",
+      "capacityRequired": "Set a capacity of at least 1 marble."
     }
   },
   "colors": {
@@ -323,6 +340,31 @@
       "done": "Done",
       "partial": "Partial",
       "missed": "Missed"
+    },
+    "jar": {
+      "weekOf": "Week of {{date}}",
+      "weekShort": "W{{n}}",
+      "quarter": "Q{{n}} {{year}}",
+      "quarterShort": "Q{{n}}·{{yy}}",
+      "extra_one": "Full! +{{count}} extra marble",
+      "extra_other": "Full! +{{count}} extra marbles",
+      "marbleValue": "1 marble = {{value}} {{unit}}",
+      "nextMarble": "{{pct}} of the next one",
+      "shelf": "Shelf"
+    },
+    "plant": {
+      "phases": {
+        "seed": "Seed",
+        "sprout": "Sprout",
+        "young": "Young plant",
+        "plant": "Plant",
+        "flower": "Flower"
+      },
+      "window": "{{pct}} over the last {{days}} due days",
+      "wiltedShort": "wilted",
+      "wiltedHint": "Complete it on the next due day and it will revive.",
+      "next": "Next phase: {{phase}} at {{pct}}",
+      "bloom": "In bloom! Keep it up to keep it that way."
     }
   },
   "guide": {
@@ -339,7 +381,7 @@
       "ideal": "Daily or almost daily habits: meditate, drink water, no smoking."
     },
     "calendar": {
-      "example": "Go to the gym",
+      "example": "Clean the house",
       "read": "A whole month. Filled circle: done. Outlined circle: partial (quantitative) or pending today. Grey: missed. Faint number: not due that day. In the detail view you can move between months.",
       "purpose": "Review specific months and find which weekdays are hardest for you.",
       "ideal": "Habits on specific days or X times a week: gym, classes, cleaning the house."
@@ -361,6 +403,18 @@
       "read": "The big number is the consecutive clean days you’ve already completed: today counts once it’s over. Below it, your record.",
       "purpose": "Watching the number grow is a reason not to start from zero again.",
       "ideal": "Negative habits: no smoking, no soda, no nail biting."
+    },
+    "marble_jar": {
+      "example": "Go to the gym",
+      "read": "Every time you complete it, a marble drops into the jar; for quantitative habits, one per amount you choose (e.g. 1 marble = 1 km), adding up across days. Missing never removes marbles. If you fill it early, you’ll see the extra marbles. When the period ends (week, month, quarter or year) the jar goes to the shelf, which shows the last 12.",
+      "purpose": "Watch what you’ve built up grow without fear of losing it: one bad day doesn’t spoil the jar.",
+      "ideal": "Yes/no or quantitative habits that don’t need to be daily: gym, kilometers run, books read."
+    },
+    "plant": {
+      "example": "Practice guitar",
+      "read": "The plant grows with how many of your last 14 due days you completed: seed, sprout (20%), young plant (40%), plant (60%) and flower (80%). Miss 3 due days in a row and it wilts, but it never dies: it revives as soon as you complete it again. For quantitative habits, a day counts if you reach the goal.",
+      "purpose": "Reward recent consistency: what counts is how you’re doing now, not months ago.",
+      "ideal": "Yes/no or quantitative habits you want to keep alive: practicing an instrument, studying, watering the plants."
     }
   }
 }

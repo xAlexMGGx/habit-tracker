@@ -11,10 +11,9 @@ import { DEFAULT_VIZ_CONFIG, IMPLEMENTED_VIZ } from '../../lib/vizConfig'
 import { HabitViz } from './HabitViz'
 import s from './VizGuide.module.css'
 
-type GuideViz = keyof typeof GUIDE_SAMPLES
-const PAGES = IMPLEMENTED_VIZ as GuideViz[]
+const PAGES = IMPLEMENTED_VIZ
 
-function GuidePage({ viz }: { viz: GuideViz }) {
+function GuidePage({ viz }: { viz: VizType }) {
   const { t } = useTranslation()
   const today = useToday()
   const habit = useMemo(
@@ -32,7 +31,15 @@ function GuidePage({ viz }: { viz: GuideViz }) {
           <span className={s.exampleIcon}>{habit.icon}</span>
           <span className={s.exampleName}>{habit.name}</span>
         </div>
-        <HabitViz habit={habit} logs={logs} today={today} size="regular" config={DEFAULT_VIZ_CONFIG} viz={viz} />
+        {/* The jar is shown full size so the guide also shows the shelf. */}
+        <HabitViz
+          habit={habit}
+          logs={logs}
+          today={today}
+          size={viz === 'marble_jar' ? 'full' : 'regular'}
+          config={DEFAULT_VIZ_CONFIG}
+          viz={viz}
+        />
       </div>
       <h3 className={s.heading}>{t('guide.howToRead')}</h3>
       <p className={s.text}>{t(`guide.${viz}.read`)}</p>
@@ -67,7 +74,7 @@ export function VizGuide({ open, initial, onClose }: Props) {
 
   useLayoutEffect(() => {
     if (!mounted || !track.current) return
-    const start = Math.max(0, PAGES.indexOf(initial as GuideViz))
+    const start = Math.max(0, initial ? PAGES.indexOf(initial) : 0)
     track.current.scrollLeft = start * track.current.clientWidth
     setPage(start)
   }, [mounted, initial])
