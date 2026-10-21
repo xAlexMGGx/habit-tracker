@@ -360,10 +360,10 @@
         "plant": "Planta",
         "flower": "Flor"
       },
-      "window": "{{pct}} en los últimos {{days}} días que tocaba",
+      "window": "{{done}} de los últimos {{days}} días que tocaba",
       "wiltedShort": "mustia",
       "wiltedHint": "Cumple el próximo día que toque y revivirá.",
-      "next": "Siguiente fase: {{phase}} al {{pct}}",
+      "next": "Siguiente fase: {{phase}} con {{needed}} de {{days}}",
       "bloom": "¡En flor! Mantén el ritmo para que siga así."
     }
   },
@@ -412,7 +412,7 @@
     },
     "plant": {
       "example": "Practicar guitarra",
-      "read": "La planta crece según cuántos de los últimos 14 días que tocaba cumpliste: semilla, brote (20 %), planta joven (40 %), planta (60 %) y flor (80 %). Si fallas 3 días seguidos se pone mustia, pero nunca muere: revive en cuanto vuelves a cumplir. En los cuantitativos, el día cuenta si llegas a la meta.",
+      "read": "La planta crece con los días que cumples de los últimos 14 en que tocaba: brote con 3, planta joven con 6, planta con 9 y flor con 12. Un hábito nuevo empieza como semilla y va creciendo día a día. Si fallas 3 días seguidos se pone mustia, pero nunca muere: revive en cuanto vuelves a cumplir. En los cuantitativos, el día cuenta si llegas a la meta.",
       "purpose": "Premiar la constancia reciente: lo que cuenta es cómo vas ahora, no lo que hiciste hace meses.",
       "ideal": "Hábitos sí/no o cuantitativos que quieres mantener vivos: practicar un instrumento, estudiar, regar las plantas."
     }

@@ -360,10 +360,10 @@
         "plant": "Plant",
         "flower": "Flower"
       },
-      "window": "{{pct}} over the last {{days}} due days",
+      "window": "{{done}} of the last {{days}} due days",
       "wiltedShort": "wilted",
       "wiltedHint": "Complete it on the next due day and it will revive.",
-      "next": "Next phase: {{phase}} at {{pct}}",
+      "next": "Next phase: {{phase}} at {{needed}} of {{days}}",
       "bloom": "In bloom! Keep it up to keep it that way."
     }
   },
@@ -412,7 +412,7 @@
     },
     "plant": {
       "example": "Practice guitar",
-      "read": "The plant grows with how many of your last 14 due days you completed: seed, sprout (20%), young plant (40%), plant (60%) and flower (80%). Miss 3 due days in a row and it wilts, but it never dies: it revives as soon as you complete it again. For quantitative habits, a day counts if you reach the goal.",
+      "read": "The plant grows with the days you complete out of your last 14 due days: sprout at 3, young plant at 6, plant at 9 and flower at 12. A new habit starts as a seed and grows day by day. Miss 3 due days in a row and it wilts, but it never dies: it revives as soon as you complete it again. For quantitative habits, a day counts if you reach the goal.",
       "purpose": "Reward recent consistency: what counts is how you’re doing now, not months ago.",
       "ideal": "Yes/no or quantitative habits you want to keep alive: practicing an instrument, studying, watering the plants."
     }

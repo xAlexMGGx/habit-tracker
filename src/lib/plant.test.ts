@@ -60,4 +60,21 @@ describe('plantState', () => {
   it('a brand-new habit is a seed, not wilted', () => {
     expect(plantState({ ...base, start_date: TODAY }, new Map(), TODAY)).toMatchObject({ phase: 'seed', wilted: false, total: 0 })
   })
+
+  it('a new habit completed today is still a seed: the % is always over 14', () => {
+    const st = plantState({ ...base, start_date: TODAY }, new Map([[TODAY, 1]]), TODAY)
+    expect(st).toMatchObject({ phase: 'seed', done: 1, total: 1, nextDays: 3 })
+    expect(st.pct).toBeCloseTo(1 / 14)
+  })
+
+  it('a new habit grows with each completed day: 3 → sprout, 6 → young, 9 → plant, 12 → flower', () => {
+    const grow = (n: number) => {
+      const start = addDays(TODAY, -(n - 1))
+      const l = new Map(Array.from({ length: n }, (_, i) => [addDays(start, i), 1]))
+      return plantState({ ...base, start_date: start }, l, TODAY).phase
+    }
+    expect([1, 2, 3, 5, 6, 8, 9, 11, 12].map(grow)).toEqual([
+      'seed', 'seed', 'sprout', 'sprout', 'young', 'young', 'plant', 'plant', 'flower',
+    ])
+  })
 })

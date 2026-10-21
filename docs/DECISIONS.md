@@ -118,6 +118,11 @@ Complementa a [SPEC.md](../SPEC.md). Cada punto se acordó con el usuario o es u
   - ventana de 14 días que tocaba;
   - umbrales del 20 / 40 / 60 / 80 % para brote, planta joven, planta y flor;
   - se marchita con 3 fallos seguidos.
-- **Qué cuenta:** hoy, mientras está pendiente, no cuenta. En los cuantitativos, un día solo cuenta si se llega a la meta. Si el hábito tiene menos de 14 días que tocaban, se usan los que haya; sin ninguno, es una semilla.
+- **El % se divide siempre entre 14** (cambio pedido tras la fase 3): los días anteriores a la creación del hábito cuentan como no cumplidos.
+  - Así, un hábito nuevo empieza como semilla y crece día a día: brote con 3 cumplidos, planta joven con 6, planta con 9 y flor con 12 de los últimos 14 días que tocaban.
+  - Antes, un hábito recién creado y cumplido hoy daba 1/1 = 100 % y salía la flor.
+  - Consecuencia: en hábitos poco frecuentes (p. ej. cada 7 días) florecer tarda meses.
+  - La tarjeta muestra "N de los últimos 14 días que tocaba" y el detalle, cuántos días cumplidos pide la siguiente fase.
+- **Qué cuenta:** hoy, mientras está pendiente, no cuenta. En los cuantitativos, un día solo cuenta si se llega a la meta.
 - **Mustia:** la fase sigue dependiendo del %. La planta mustia tiene el tallo doblado y las hojas caídas y marrones, y revive con el siguiente día cumplido.
 - **Detalle:** se muestra el progreso por fases y el % necesario para la siguiente.

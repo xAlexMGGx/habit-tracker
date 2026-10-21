@@ -1,5 +1,4 @@
 import { useTranslation } from 'react-i18next'
-import { formatPercent } from '../../lib/habitMeta'
 import { PLANT_PHASES, PLANT_WINDOW, type PlantPhase, plantState } from '../../lib/plant'
 import type { VizProps } from './types'
 import s from './viz.module.css'
@@ -106,9 +105,8 @@ function PlantSvg({ phase, wilted, height, label }: { phase: PlantPhase; wilted:
  * three misses in a row make it wilt, and one completion revives it.
  */
 export function Plant({ habit, logs, today, size }: VizProps) {
-  const { t, i18n } = useTranslation()
+  const { t } = useTranslation()
   const st = plantState(habit, logs, today)
-  const pct = (v: number) => formatPercent(v, i18n.language)
   const phaseName = t(`viz.plant.phases.${st.phase}`)
 
   return (
@@ -124,7 +122,7 @@ export function Plant({ habit, logs, today, size }: VizProps) {
           {phaseName}
           {st.wilted ? <span className={s.plantWilted}> · {t('viz.plant.wiltedShort')}</span> : null}
         </span>
-        <span className={s.muted}>{t('viz.plant.window', { pct: pct(st.pct), days: PLANT_WINDOW })}</span>
+        <span className={s.muted}>{t('viz.plant.window', { done: st.done, days: PLANT_WINDOW })}</span>
         {st.wilted && size !== 'compact' ? <span className={s.plantHint}>{t('viz.plant.wiltedHint')}</span> : null}
       </div>
 
@@ -139,9 +137,13 @@ export function Plant({ habit, logs, today, size }: VizProps) {
             ))}
           </div>
           <p className={s.plantNext}>
-            {st.next == null
+            {st.nextDays == null
               ? t('viz.plant.bloom')
-              : t('viz.plant.next', { phase: t(`viz.plant.phases.${PLANT_PHASES[st.phaseIndex + 1]}`), pct: pct(st.next) })}
+              : t('viz.plant.next', {
+                  phase: t(`viz.plant.phases.${PLANT_PHASES[st.phaseIndex + 1]}`),
+                  needed: st.nextDays,
+                  days: PLANT_WINDOW,
+                })}
           </p>
         </div>
       ) : null}
