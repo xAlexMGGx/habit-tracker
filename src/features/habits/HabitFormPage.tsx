@@ -1,5 +1,5 @@
-import { Archive } from 'lucide-react'
-import { type FormEvent, type ReactNode, useState } from 'react'
+import { Archive, CircleHelp } from 'lucide-react'
+import { type FormEvent, type ReactNode, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useLocation, useNavigate, useParams } from 'react-router'
 import { useConfirm } from '../../components/ConfirmProvider'
@@ -10,8 +10,20 @@ import { useToday } from '../../hooks/useToday'
 import type { FrequencyType, Habit, HabitType, VizType } from '../../lib/database.types'
 import { DEFAULT_VIZ, HABIT_TYPES, VIZ_BY_TYPE, frequenciesFor } from '../../lib/habitMeta'
 import { newId } from '../../lib/platform'
+import { sampleHabit, sampleLogs } from '../../lib/sampleData'
 import { showToast } from '../../lib/toast'
+import {
+  type BarsRange,
+  IMPLEMENTED_VIZ,
+  type RingPeriod,
+  type VizConfig,
+  availableViz,
+  readVizConfig,
+  writeVizConfig,
+} from '../../lib/vizConfig'
 import ui from '../../styles/ui.module.css'
+import { HabitViz } from '../viz/HabitViz'
+import { VizGuide } from '../viz/VizGuide'
 import s from './Habits.module.css'
 
 type FormState = {
@@ -29,6 +41,7 @@ type FormState = {
   interval: number
   startDate: string
   viz: VizType
+  vizConfig: VizConfig
 }
 
 type Errors = Partial<Record<'name' | 'icon' | 'target' | 'quickStep' | 'days' | 'interval' | 'startDate', string>>
@@ -50,6 +63,7 @@ function initialState(habit: Habit | null, today: string): FormState {
       interval: 2,
       startDate: today,
       viz: DEFAULT_VIZ.boolean,
+      vizConfig: readVizConfig(null),
     }
   }
   return {
@@ -67,6 +81,7 @@ function initialState(habit: Habit | null, today: string): FormState {
     interval: habit.frequency_interval ?? 2,
     startDate: habit.start_date,
     viz: habit.viz_type,
+    vizConfig: readVizConfig(habit.viz_config),
   }
 }
 
@@ -99,8 +114,30 @@ function HabitForm({ habit }: { habit: Habit | null }) {
   // Errors show after the first save attempt and then update as the user fixes them.
   const [attempted, setAttempted] = useState(false)
   const [submitError, setSubmitError] = useState<string | null>(null)
+  const [guideOpen, setGuideOpen] = useState(false)
   const saving = create.isPending || update.isPending
   const isNew = habit == null
+
+  // Live preview of the chosen visualization with sample data shaped like this habit.
+  const targetNumber = toNumber(form.target)
+  const preview = useMemo(() => {
+    const h = sampleHabit(today, {
+      type: form.type,
+      icon: form.icon,
+      color: form.color,
+      unit: form.unit || null,
+      target: form.type === 'quantitative' ? (targetNumber > 0 ? targetNumber : 8) : null,
+      frequency_type: form.frequency,
+      frequency_days: form.frequency === 'weekdays' ? form.weekdays : form.frequency === 'times_per_week' ? form.planned : null,
+      frequency_times: form.frequency === 'times_per_week' ? form.times : null,
+      frequency_interval: form.frequency === 'every_n_days' ? form.interval : null,
+    })
+    return { habit: h, logs: sampleLogs(h, today) }
+  }, [today, form.type, form.icon, form.color, form.unit, targetNumber, form.frequency, form.weekdays, form.planned, form.times, form.interval])
+
+  // A visualization from a later phase stays selectable for habits that already use it.
+  const vizOptions = availableViz(form.type)
+  if (VIZ_BY_TYPE[form.type].includes(form.viz) && !vizOptions.includes(form.viz)) vizOptions.push(form.viz)
 
   const set = <K extends keyof FormState>(key: K, value: FormState[K]) => setForm((f) => ({ ...f, [key]: value }))
 
@@ -110,7 +147,7 @@ function HabitForm({ habit }: { habit: Habit | null }) {
     setForm((f) => ({
       ...f,
       type,
-      viz: vizChosen && VIZ_BY_TYPE[type].includes(f.viz) ? f.viz : DEFAULT_VIZ[type],
+      viz: vizChosen && availableViz(type).includes(f.viz) ? f.viz : DEFAULT_VIZ[type],
       frequency: frequenciesFor(type).includes(f.frequency) ? f.frequency : 'daily',
     }))
 
@@ -157,6 +194,7 @@ function HabitForm({ habit }: { habit: Habit | null }) {
       frequency_interval: form.frequency === 'every_n_days' ? form.interval : null,
       start_date: form.startDate,
       viz_type: form.viz,
+      viz_config: writeVizConfig(habit?.viz_config, form.vizConfig),
     }
 
     try {
@@ -358,9 +396,32 @@ function HabitForm({ habit }: { habit: Habit | null }) {
         {errors.startDate ? <p className={ui.error}>{errors.startDate}</p> : null}
       </Section>
 
-      <Section title={t('habits.fields.viz')} footer={t('habits.fields.vizHint')}>
+      <div className={ui.section}>
+        <div className={s.vizTitle}>
+          <h2 className={ui.sectionTitle}>{t('habits.fields.viz')}</h2>
+          <button type="button" className={s.helpBtn} onClick={() => setGuideOpen(true)} aria-label={t('guide.title')}>
+            <CircleHelp size={22} />
+          </button>
+        </div>
+
+        <div className={s.previewCard}>
+          <span className={s.previewLabel}>{t('habits.fields.vizPreview')}</span>
+          {IMPLEMENTED_VIZ.includes(form.viz) ? (
+            <HabitViz
+              habit={preview.habit}
+              logs={preview.logs}
+              today={today}
+              size="regular"
+              config={form.vizConfig}
+              viz={form.viz}
+            />
+          ) : (
+            <p className={ui.muted}>{t('habits.fields.vizSoon')}</p>
+          )}
+        </div>
+
         <div className={ui.group} role="radiogroup">
-          {VIZ_BY_TYPE[form.type].map((viz) => (
+          {vizOptions.map((viz) => (
             <button
               key={viz}
               type="button"
@@ -377,7 +438,45 @@ function HabitForm({ habit }: { habit: Habit | null }) {
             </button>
           ))}
         </div>
-      </Section>
+
+        {form.viz === 'ring' ? (
+          <div className={`${ui.group} ${s.vizParams}`}>
+            <div className={ui.row}>
+              <span className={ui.rowLabel}>{t('habits.fields.ringPeriod')}</span>
+              <div className={s.paramControl}>
+                <Segmented<RingPeriod>
+                  value={form.vizConfig.ringPeriod}
+                  onChange={(ringPeriod) => set('vizConfig', { ...form.vizConfig, ringPeriod })}
+                  options={[
+                    { value: 'week', label: t('viz.week') },
+                    { value: 'month', label: t('viz.month') },
+                  ]}
+                />
+              </div>
+            </div>
+          </div>
+        ) : null}
+        {form.viz === 'bars' ? (
+          <div className={`${ui.group} ${s.vizParams}`}>
+            <div className={ui.row}>
+              <span className={ui.rowLabel}>{t('habits.fields.barsRange')}</span>
+              <div className={s.paramControl}>
+                <Segmented<'7' | '30'>
+                  value={String(form.vizConfig.barsRange) as '7' | '30'}
+                  onChange={(v) => set('vizConfig', { ...form.vizConfig, barsRange: Number(v) as BarsRange })}
+                  options={[
+                    { value: '7', label: '7' },
+                    { value: '30', label: '30' },
+                  ]}
+                />
+              </div>
+            </div>
+          </div>
+        ) : null}
+        <p className={ui.sectionFooter}>{t('habits.fields.vizHint')}</p>
+      </div>
+
+      <VizGuide open={guideOpen} initial={form.viz} onClose={() => setGuideOpen(false)} />
 
       {submitError ? <p className={ui.error}>{submitError}</p> : null}
 

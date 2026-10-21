@@ -28,7 +28,15 @@
     "weekdayShort": "EEE"
   },
   "weekdays": {
-    "initials": ["M", "T", "W", "T", "F", "S", "S"]
+    "initials": [
+      "M",
+      "T",
+      "W",
+      "T",
+      "F",
+      "S",
+      "S"
+    ]
   },
   "nav": {
     "agenda": "Agenda",
@@ -170,7 +178,11 @@
       "startDate": "Starts on",
       "startDateHint": "The habit shows up in the Agenda from this day on.",
       "viz": "Visualization",
-      "vizHint": "You can change it any time without losing data."
+      "vizHint": "You can change it any time without losing data.",
+      "vizPreview": "Preview with sample data",
+      "ringPeriod": "Period",
+      "barsRange": "Days shown",
+      "vizSoon": "This visualization is coming soon. Meanwhile the default one is shown."
     },
     "types": {
       "boolean": "Yes/no",
@@ -229,10 +241,6 @@
     "pink": "Pink",
     "brown": "Brown"
   },
-  "tracker": {
-    "comingSoon": "Coming soon",
-    "comingSoonBody": "Here you'll see your habits as cards with visualizations: heatmap, calendar, ring and more."
-  },
   "settings": {
     "account": "Account",
     "signedInAs": "Signed in as",
@@ -262,5 +270,97 @@
   "update": {
     "available": "A new version is available.",
     "reload": "Update"
+  },
+  "tracker": {
+    "progress": "{{done}}/{{total}} habits done today",
+    "columns": "Columns",
+    "oneColumn": "One column",
+    "twoColumns": "Two columns",
+    "sortTitle": "Sort cards",
+    "sort": {
+      "manual": "Manual",
+      "streak": "By streak",
+      "completion": "By completion %",
+      "pending_first": "Pending today first"
+    },
+    "sortHint": "Completion % is over the last 30 days. Your manual order is kept even if you use an automatic one.",
+    "dragHint": "Press and hold a card, then drag it to reorder.",
+    "autoHint": "To move cards by hand, switch back to manual order.",
+    "notDueToday": "Not due today",
+    "sortableCard": "movable card",
+    "viewAs": "View as",
+    "viewAsHint": "★ is the chosen visualization. Viewing it another way here doesn’t change it; edit the habit for that."
+  },
+  "stats": {
+    "title": "Stats",
+    "currentStreak": "Current streak",
+    "cleanStreak": "Days clean",
+    "bestStreak": "Best streak",
+    "week": "This week",
+    "month": "This month",
+    "total": "Total",
+    "hint": "Calculated over the days the habit was due. Today counts once you complete it (for negative habits, once the day is over)."
+  },
+  "viz": {
+    "prevMonth": "Previous month",
+    "nextMonth": "Next month",
+    "thisWeek": "This week",
+    "thisMonth": "This month",
+    "week": "Week",
+    "month": "Month",
+    "doneOf": "{{done}} of {{total}}",
+    "lastDays_one": "Last day",
+    "lastDays_other": "Last {{count}} days",
+    "daysClean_one": "day clean",
+    "daysClean_other": "days clean",
+    "record_one": "Record: {{count}} day",
+    "record_other": "Record: {{count}} days",
+    "status": {
+      "inactive": "Before it started",
+      "future": "Not yet",
+      "not_due": "Not due",
+      "pending": "Pending",
+      "done": "Done",
+      "partial": "Partial",
+      "missed": "Missed"
+    }
+  },
+  "guide": {
+    "title": "Visualization guide",
+    "howToRead": "How to read it",
+    "purpose": "What it’s for",
+    "idealFor": "Ideal for",
+    "previous": "Previous",
+    "next": "Next",
+    "heatmap": {
+      "example": "Meditate",
+      "read": "Each square is a day and each column a week (Monday on top). The stronger the color, the more you did; for quantitative habits, according to the amount. Very light squares are days it wasn’t due, and the outline marks today. For negative habits clean days are colored and relapses show in red.",
+      "purpose": "See your consistency over the last weeks at a glance, spot gaps and keep the chain going.",
+      "ideal": "Daily or almost daily habits: meditate, drink water, no smoking."
+    },
+    "calendar": {
+      "example": "Go to the gym",
+      "read": "A whole month. Filled circle: done. Outlined circle: partial (quantitative) or pending today. Grey: missed. Faint number: not due that day. In the detail view you can move between months.",
+      "purpose": "Review specific months and find which weekdays are hardest for you.",
+      "ideal": "Habits on specific days or X times a week: gym, classes, cleaning the house."
+    },
+    "ring": {
+      "example": "Read",
+      "read": "The ring fills with the % of due days completed this week (Monday to today) or this month, as you choose. Below it you see how many you’ve done out of those due. Today counts as soon as you complete it.",
+      "purpose": "A short, clear goal: close the ring this week.",
+      "ideal": "Any habit, especially non-daily ones: reading on weekdays, calling family."
+    },
+    "bars": {
+      "example": "Drink water",
+      "read": "Each bar is the amount logged that day and the dashed line is your goal. Strong color: you reached the goal; lighter: you fell short. With 30 days it’s drawn as a line.",
+      "purpose": "See how much you do, not just whether you do it, and whether you’re trending up or down.",
+      "ideal": "Quantitative habits: glasses of water, steps, minutes of study."
+    },
+    "days_since": {
+      "example": "No smoking",
+      "read": "The big number is the consecutive clean days you’ve already completed: today counts once it’s over. Below it, your record.",
+      "purpose": "Watching the number grow is a reason not to start from zero again.",
+      "ideal": "Negative habits: no smoking, no soda, no nail biting."
+    }
   }
 }

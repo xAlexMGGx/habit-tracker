@@ -1,0 +1,350 @@
+/* All visualizations draw with the habit color, exposed as --c by HabitViz. */
+
+.muted {
+  color: var(--text-2);
+}
+
+.axisLabel {
+  font-size: 10px;
+  fill: var(--text-2);
+}
+
+.axisToday {
+  fill: var(--c);
+  font-weight: 700;
+}
+
+/* ---------- Heatmap ---------- */
+.heatmap {
+  width: 100%;
+  overflow: hidden;
+}
+
+.cellEmpty {
+  fill: var(--fill-2);
+}
+
+.cellNotDue {
+  fill: var(--fill);
+  fill-opacity: 0.5;
+}
+
+.cellInactive {
+  fill: var(--fill);
+  fill-opacity: 0.25;
+}
+
+.cellRelapse {
+  fill: var(--danger);
+  fill-opacity: 0.75;
+}
+
+.cellFilled {
+  fill: var(--c);
+}
+
+.cellPending {
+  fill: var(--fill-2);
+  stroke: var(--c);
+  stroke-width: 1.5;
+}
+
+.cellToday {
+  fill: var(--c);
+  stroke: var(--c);
+  stroke-width: 1.5;
+}
+
+/* ---------- Monthly calendar ---------- */
+.calendar {
+  width: 100%;
+}
+
+.calHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.calTitle {
+  font-weight: 600;
+  font-size: 17px;
+}
+
+.calNav {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 20px;
+  color: var(--accent);
+}
+
+.calNav:disabled {
+  opacity: 0.3;
+}
+
+.calCaption {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-2);
+  margin-bottom: 6px;
+}
+
+.calGrid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 3px;
+  justify-items: center;
+}
+
+.calWeekday {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-2);
+  padding-bottom: 2px;
+}
+
+.calDay {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  aspect-ratio: 1;
+  width: 100%;
+  border-radius: 50%;
+  font-variant-numeric: tabular-nums;
+  font-weight: 500;
+  isolation: isolate;
+}
+
+.cal_compact .calGrid {
+  gap: 4px;
+}
+
+.cal_compact .calDay {
+  width: 78%;
+}
+
+.cal_regular .calDay {
+  max-width: 34px;
+  font-size: 13px;
+}
+
+.cal_full .calDay {
+  max-width: 42px;
+  font-size: 15px;
+}
+
+.calDone {
+  background: var(--c);
+  color: #fff;
+  font-weight: 700;
+}
+
+.calPartial {
+  color: var(--text);
+  box-shadow: inset 0 0 0 2px var(--c);
+}
+
+.calPartial::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: var(--c);
+  opacity: calc(0.15 + var(--i, 0.5) * 0.45);
+  z-index: -1;
+}
+
+.calMissed {
+  background: color-mix(in srgb, var(--danger) 18%, var(--fill));
+  color: var(--text-2);
+}
+
+.calPending {
+  box-shadow: inset 0 0 0 2px var(--c);
+}
+
+.calNotDue {
+  color: var(--text-3);
+}
+
+.cal_compact .calNotDue {
+  background: var(--fill);
+  opacity: 0.5;
+}
+
+.calFuture {
+  color: var(--text-3);
+}
+
+.cal_compact .calFuture {
+  background: transparent;
+  box-shadow: inset 0 0 0 1px var(--fill-2);
+}
+
+.calToday:not(.calDone) {
+  box-shadow: inset 0 0 0 2px var(--c);
+}
+
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 14px;
+  margin-top: 12px;
+  font-size: 13px;
+  color: var(--text-2);
+}
+
+.legendItem {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.legendSwatch {
+  position: relative;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  isolation: isolate;
+}
+
+.legendSwatch.calNotDue {
+  box-shadow: inset 0 0 0 1px var(--text-3);
+}
+
+/* ---------- Ring ---------- */
+.ring {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.ringTrack {
+  fill: none;
+  stroke: var(--fill-2);
+}
+
+.ringValue {
+  fill: none;
+  stroke: var(--c);
+  stroke-linecap: round;
+  transition: stroke-dasharray 0.4s ease;
+}
+
+.ringPct {
+  fill: var(--text);
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+
+.ringPct_compact {
+  font-size: 22px;
+}
+
+.ringPct_regular {
+  font-size: 28px;
+}
+
+.ringPct_full {
+  font-size: 40px;
+}
+
+.ringCaption {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.25;
+}
+
+/* ---------- Bars / line ---------- */
+.bars {
+  width: 100%;
+}
+
+.barTrack {
+  fill: var(--fill);
+}
+
+.barDone {
+  fill: var(--c);
+}
+
+.barPartial {
+  fill: var(--c);
+  fill-opacity: 0.45;
+}
+
+.targetLine {
+  stroke: var(--text-2);
+  stroke-width: 1.2;
+  stroke-dasharray: 4 4;
+}
+
+.line {
+  fill: none;
+  stroke: var(--c);
+  stroke-width: 2.5;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+
+.lineArea {
+  fill: var(--c);
+  fill-opacity: 0.16;
+}
+
+.linePoint {
+  fill: var(--c);
+}
+
+/* ---------- Days without ---------- */
+.daysSince {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  line-height: 1.1;
+}
+
+.daysNumber {
+  font-weight: 800;
+  color: var(--c);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.03em;
+}
+
+.daysSince_compact .daysNumber {
+  font-size: 52px;
+}
+
+.daysSince_regular .daysNumber {
+  font-size: 68px;
+}
+
+.daysSince_full .daysNumber {
+  font-size: 104px;
+}
+
+.daysLabel {
+  margin-top: 2px;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.daysRecord {
+  margin-top: 6px;
+  font-size: 13px;
+  color: var(--text-2);
+}
+
+.daysSince_full .daysLabel {
+  font-size: 17px;
+}

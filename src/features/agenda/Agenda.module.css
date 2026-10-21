@@ -299,67 +299,6 @@ label:has(> .dateOverlay) {
   transition: width 0.25s ease;
 }
 
-.habitCheck {
-  flex: none;
-  position: relative;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  border: 2.5px solid color-mix(in srgb, var(--c) 55%, transparent);
-  color: transparent;
-  transition: background 0.15s, color 0.15s, transform 0.1s;
-}
-
-.habitCheck:active:not(:disabled) {
-  transform: scale(0.92);
-}
-
-.habitCheckOn {
-  background: var(--c);
-  border-color: var(--c);
-  color: #fff;
-}
-
-.habitCheck:disabled {
-  opacity: 0.5;
-}
-
-.habitPill {
-  flex: none;
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  min-height: 36px;
-  padding: 0 14px;
-  border-radius: 18px;
-  background: color-mix(in srgb, var(--c) 16%, transparent);
-  color: var(--c);
-  font-weight: 700;
-  font-size: 15px;
-  font-variant-numeric: tabular-nums;
-}
-
-.habitPill:active:not(:disabled) {
-  transform: scale(0.95);
-}
-
-.habitPillDone {
-  background: var(--c);
-  color: #fff;
-}
-
-.habitPill:disabled {
-  opacity: 0.5;
-}
-
-.relapse {
-  background: color-mix(in srgb, var(--danger) 14%, transparent);
-  color: var(--danger);
-}
-
 .habitDone .habitName {
   color: var(--text-2);
 }

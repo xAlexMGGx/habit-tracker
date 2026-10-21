@@ -50,3 +50,46 @@ Complementa a [SPEC.md](../SPEC.md). Cada punto se acordó con el usuario o es u
 
 - **Exportar:** JSON (todo en un fichero) o CSV (habits, habit-logs y todos). Se hace en dos toques (preparar → guardar) porque iOS solo permite abrir la hoja de compartir directamente desde un toque.
 - **Cambiar contraseña** desde Ajustes → Cuenta.
+
+## Seguimiento (fase 2)
+
+- **Tarjetas:** una por hábito activo, incluidos los que hoy no tocan, que muestran "Hoy no toca".
+  - Si el hábito toca hoy, o es opcional esta semana, la tarjeta tiene un **botón para marcar hoy** (check, +N o recaída, el mismo que en Agenda). Al tocar el resto de la tarjeta se abre el detalle.
+- **Barra de progreso:** el mismo cálculo que el contador "Hábitos n/m" de la Agenda para hoy.
+- **Reordenar:** se mantiene pulsada la tarjeta (unos 0,35 s) y se arrastra. Solo funciona en orden manual, y ese orden es el mismo que el de Mis hábitos. Los órdenes automáticos no tocan `sort_order`.
+- **Orden "por % de cumplimiento":** usa el % de los **últimos 30 días**. Con empate se mantiene el orden manual. En "Pendientes hoy primero" no cuentan los negativos, porque no requieren ninguna acción.
+
+## Estadísticas
+
+- Se calculan sobre los días en que tocaba el hábito (para X veces por semana, con el plan ya ajustado).
+- **Racha actual:** días que tocaban, seguidos y cumplidos, hasta hoy.
+  - Hoy, si aún está pendiente, no rompe la racha.
+  - En los cuantitativos, un día parcial la rompe.
+  - En los negativos, hoy cuenta cuando termina; una recaída hoy la pone a 0.
+  - La racha se muestra como número, sin unidad, porque en hábitos no diarios son "veces", no días.
+- **Porcentajes:** cumplidos / días que tocaban.
+  - Semana y mes son **naturales**: de lunes a hoy y del día 1 a hoy.
+  - Hoy solo cuenta si ya está cumplido. En los negativos, solo si hay recaída.
+  - Sin días que contar se muestra "—".
+- **Días sin:** la racha limpia de un hábito negativo; el récord es su mejor racha.
+
+## Visualizaciones
+
+- **Tres tamaños:** tarjeta a 2 columnas, tarjeta a 1 columna y detalle.
+- **Mapa de calor:**
+  - Columnas = semanas (lunes arriba). Se muestran tantas como quepan, hasta 53.
+  - Los días en que no tocaba son muy claros, y los anteriores al inicio del hábito, más tenues todavía.
+  - Las recaídas salen en rojo y hoy lleva un borde.
+- **Calendario:**
+  - Colores: cumplido en color lleno, parcial con borde y relleno proporcional, fallado en rojo suave, no tocaba con el número tenue.
+  - En la tarjeta muestra el mes actual sin navegación; en el detalle se navega hasta el mes actual.
+- **Anillo:** `viz_config.ringPeriod` = `week` (por defecto) o `month`.
+- **Barras / línea:** `viz_config.barsRange` = 7 (barras, por defecto) o 30 (línea). Hoy, sin registro, no se dibuja en la línea.
+- **Detalle:**
+  - Chips "Ver como" con las visualizaciones compatibles; ★ marca la elegida.
+  - Cambiar de visualización, o el periodo del anillo y el rango de las barras, ahí solo sirve para mirar: no se guarda.
+- **Tarro y planta:** no se ofrecen en el formulario hasta la fase 3. Si un hábito ya los tenía elegidos, se dibuja con la visualización por defecto de su tipo hasta entonces.
+- **Formulario:**
+  - Vista previa de la visualización elegida con datos de ejemplo parecidos al hábito.
+  - Mientras no eliges una a mano, la visualización sigue al tipo de hábito.
+- **Guía "?":** botón en Mis hábitos (empieza en la primera página) y junto al selector del formulario (empieza en la visualización elegida). Los ejemplos se dibujan con los mismos componentes y datos generados.

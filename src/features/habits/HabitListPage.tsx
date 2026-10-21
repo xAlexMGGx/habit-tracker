@@ -16,7 +16,7 @@ import {
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
-import { ChevronDown, ChevronRight, Menu, Plus, Trash2 } from 'lucide-react'
+import { ChevronDown, ChevronRight, CircleHelp, Menu, Plus, Trash2 } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router'
@@ -28,6 +28,7 @@ import { useDateLocale } from '../../i18n'
 import type { Habit } from '../../lib/database.types'
 import { frequencySummary, targetSummary } from '../../lib/format'
 import ui from '../../styles/ui.module.css'
+import { VizGuide } from '../viz/VizGuide'
 import s from './Habits.module.css'
 
 function SortableHabitRow({ habit }: { habit: Habit }) {
@@ -131,6 +132,7 @@ export function HabitListPage() {
   const { t } = useTranslation()
   const habitsQuery = useHabits()
   const reorder = useReorderHabits()
+  const [guideOpen, setGuideOpen] = useState(false)
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 4 } }),
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
@@ -157,9 +159,14 @@ export function HabitListPage() {
         title={t('titles.habits')}
         showSettings
         right={
-          <Link to="/habits/new" className={ui.iconBtn} aria-label={t('habits.new')}>
-            <Plus size={26} />
-          </Link>
+          <>
+            <button type="button" className={ui.iconBtn} onClick={() => setGuideOpen(true)} aria-label={t('guide.title')}>
+              <CircleHelp size={23} strokeWidth={1.8} />
+            </button>
+            <Link to="/habits/new" className={ui.iconBtn} aria-label={t('habits.new')}>
+              <Plus size={26} />
+            </Link>
+          </>
         }
       />
 
@@ -201,6 +208,7 @@ export function HabitListPage() {
           <ArchivedSection habits={archived} />
         </>
       )}
+      <VizGuide open={guideOpen} onClose={() => setGuideOpen(false)} />
     </div>
   )
 }

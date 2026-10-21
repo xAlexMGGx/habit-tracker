@@ -28,7 +28,15 @@
     "weekdayShort": "EEE"
   },
   "weekdays": {
-    "initials": ["L", "M", "X", "J", "V", "S", "D"]
+    "initials": [
+      "L",
+      "M",
+      "X",
+      "J",
+      "V",
+      "S",
+      "D"
+    ]
   },
   "nav": {
     "agenda": "Agenda",
@@ -170,7 +178,11 @@
       "startDate": "Empieza el",
       "startDateHint": "El hábito aparece en la Agenda a partir de este día.",
       "viz": "Visualización",
-      "vizHint": "Puedes cambiarla cuando quieras sin perder datos."
+      "vizHint": "Puedes cambiarla cuando quieras sin perder datos.",
+      "vizPreview": "Vista previa con datos de ejemplo",
+      "ringPeriod": "Periodo",
+      "barsRange": "Días que se ven",
+      "vizSoon": "Esta visualización llegará pronto. Mientras tanto se muestra con la de por defecto."
     },
     "types": {
       "boolean": "Sí/no",
@@ -229,10 +241,6 @@
     "pink": "Rosa",
     "brown": "Marrón"
   },
-  "tracker": {
-    "comingSoon": "Muy pronto",
-    "comingSoonBody": "Aquí verás tus hábitos como tarjetas con visualizaciones: mapa de calor, calendario, anillo y más."
-  },
   "settings": {
     "account": "Cuenta",
     "signedInAs": "Sesión iniciada como",
@@ -262,5 +270,97 @@
   "update": {
     "available": "Hay una versión nueva.",
     "reload": "Actualizar"
+  },
+  "tracker": {
+    "progress": "{{done}}/{{total}} hábitos completados hoy",
+    "columns": "Columnas",
+    "oneColumn": "Una columna",
+    "twoColumns": "Dos columnas",
+    "sortTitle": "Ordenar tarjetas",
+    "sort": {
+      "manual": "Manual",
+      "streak": "Por racha",
+      "completion": "Por % de cumplimiento",
+      "pending_first": "Pendientes hoy primero"
+    },
+    "sortHint": "El % de cumplimiento es el de los últimos 30 días. Tu orden manual se guarda aunque uses uno automático.",
+    "dragHint": "Mantén pulsada una tarjeta y arrástrala para cambiar el orden.",
+    "autoHint": "Para mover tarjetas a mano, vuelve al orden manual.",
+    "notDueToday": "Hoy no toca",
+    "sortableCard": "tarjeta que se puede mover",
+    "viewAs": "Ver como",
+    "viewAsHint": "★ es la visualización elegida. Verlo de otra forma aquí no la cambia; para eso, edita el hábito."
+  },
+  "stats": {
+    "title": "Estadísticas",
+    "currentStreak": "Racha actual",
+    "cleanStreak": "Días sin recaídas",
+    "bestStreak": "Mejor racha",
+    "week": "Esta semana",
+    "month": "Este mes",
+    "total": "Total",
+    "hint": "Se calculan sobre los días en que tocaba el hábito. Hoy cuenta cuando lo cumples (en los negativos, cuando termina el día)."
+  },
+  "viz": {
+    "prevMonth": "Mes anterior",
+    "nextMonth": "Mes siguiente",
+    "thisWeek": "Esta semana",
+    "thisMonth": "Este mes",
+    "week": "Semana",
+    "month": "Mes",
+    "doneOf": "{{done}} de {{total}}",
+    "lastDays_one": "Último día",
+    "lastDays_other": "Últimos {{count}} días",
+    "daysClean_one": "día sin recaídas",
+    "daysClean_other": "días sin recaídas",
+    "record_one": "Récord: {{count}} día",
+    "record_other": "Récord: {{count}} días",
+    "status": {
+      "inactive": "Antes de empezar",
+      "future": "Aún no ha llegado",
+      "not_due": "No tocaba",
+      "pending": "Pendiente",
+      "done": "Cumplido",
+      "partial": "Parcial",
+      "missed": "Fallado"
+    }
+  },
+  "guide": {
+    "title": "Guía de visualizaciones",
+    "howToRead": "Cómo se lee",
+    "purpose": "Para qué sirve",
+    "idealFor": "Ideal para",
+    "previous": "Anterior",
+    "next": "Siguiente",
+    "heatmap": {
+      "example": "Meditar",
+      "read": "Cada cuadrado es un día y cada columna una semana (el lunes arriba). Cuanto más intenso el color, más cumpliste; en los hábitos cuantitativos, según la cantidad. Los cuadrados muy claros son días en que no tocaba y el borde marca hoy. En los negativos se colorean los días limpios y las recaídas salen en rojo.",
+      "purpose": "Ver de un vistazo tu constancia de las últimas semanas, detectar huecos y no querer «romper la cadena».",
+      "ideal": "Hábitos diarios o casi diarios: meditar, beber agua, no fumar."
+    },
+    "calendar": {
+      "example": "Ir al gimnasio",
+      "read": "Un mes completo. Círculo de color: cumplido. Círculo con borde: parcial (cuantitativos) o pendiente hoy. Gris: fallado. Número tenue: ese día no tocaba. En el detalle puedes pasar de un mes a otro.",
+      "purpose": "Repasar meses concretos y descubrir qué días de la semana te cuestan más.",
+      "ideal": "Hábitos de días concretos o de X veces por semana: gimnasio, clases, limpiar la casa."
+    },
+    "ring": {
+      "example": "Leer",
+      "read": "El anillo se llena con el % de días cumplidos esta semana (de lunes a hoy) o este mes, según elijas. Debajo ves cuántos llevas de los que tocaban. Hoy cuenta en cuanto lo cumples.",
+      "purpose": "Tener una meta corta y clara: cerrar el anillo esta semana.",
+      "ideal": "Cualquier hábito, sobre todo los que no son diarios: leer entre semana, llamar a la familia."
+    },
+    "bars": {
+      "example": "Beber agua",
+      "read": "Cada barra es la cantidad registrada ese día y la línea discontinua es tu meta. Barra de color intenso: llegaste a la meta; más clara: te quedaste corto. Con 30 días se dibuja como una línea.",
+      "purpose": "Ver cuánto haces, no solo si lo haces, y si vas a más o a menos.",
+      "ideal": "Hábitos cuantitativos: vasos de agua, pasos, minutos de estudio."
+    },
+    "days_since": {
+      "example": "No fumar",
+      "read": "El número grande son los días seguidos sin recaídas que ya has completado: hoy cuenta cuando termina. Debajo, tu récord.",
+      "purpose": "Ver crecer el número motiva a no tener que volver a empezar de cero.",
+      "ideal": "Hábitos negativos: no fumar, no tomar refrescos, no morderse las uñas."
+    }
   }
 }

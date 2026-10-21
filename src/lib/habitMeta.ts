@@ -49,3 +49,8 @@ export const DEFAULT_VIZ: Record<HabitType, VizType> = {
 export function formatNumber(value: number, lang: string): string {
   return new Intl.NumberFormat(lang, { maximumFractionDigits: 2 }).format(value)
 }
+
+/** 0.856 → "86 %" (es) / "86%" (en). */
+export function formatPercent(value: number, lang: string): string {
+  return new Intl.NumberFormat(lang, { style: 'percent', maximumFractionDigits: 0 }).format(value)
+}

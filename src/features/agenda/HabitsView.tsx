@@ -1,14 +1,12 @@
-import { Check } from 'lucide-react'
-import type { CSSProperties, ReactNode } from 'react'
+import type { CSSProperties } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router'
+import { HabitQuickAction } from '../../components/HabitQuickAction'
 import { HabitIcon } from '../../components/controls'
-import { useSetLogValue } from '../../data/logs'
 import type { Habit } from '../../lib/database.types'
 import type { DateStr } from '../../lib/dates'
 import { formatNumber, habitColorStyle } from '../../lib/habitMeta'
 import { type LogIndex, isCompletedValue, logsFor, weekProgress } from '../../lib/schedule'
-import { showToast } from '../../lib/toast'
 import ui from '../../styles/ui.module.css'
 import s from './Agenda.module.css'
 
@@ -23,69 +21,17 @@ type RowProps = {
 
 function HabitRow({ habit, date, value, editable, week, onOpenValue }: RowProps) {
   const { t, i18n } = useTranslation()
-  const setLog = useSetLogValue()
   const done = isCompletedValue(habit, value)
-  const set = (next: number) => setLog.mutate({ habitId: habit.id, date, value: next })
   const num = (n: number) => formatNumber(n, i18n.language)
 
   let detail: string | null = null
-  let control: ReactNode
   let progress: number | null = null
-
-  switch (habit.type) {
-    case 'boolean':
-      control = (
-        <button
-          type="button"
-          className={`${s.habitCheck} ${done ? s.habitCheckOn : ''}`}
-          aria-pressed={done}
-          aria-label={done ? t('agenda.markUndone') : t('agenda.markDone')}
-          disabled={!editable}
-          onClick={() => set(done ? 0 : 1)}
-        >
-          <Check size={22} strokeWidth={3} />
-        </button>
-      )
-      break
-
-    case 'quantitative': {
-      const target = habit.target ?? 1
-      detail = t('agenda.amount', { value: num(value), target: num(target), unit: habit.unit ?? '' }).trim()
-      progress = Math.min(1, value / target)
-      control = (
-        <button
-          type="button"
-          className={`${s.habitPill} ${done ? s.habitPillDone : ''}`}
-          disabled={!editable}
-          onClick={() => set(value + habit.quick_step)}
-        >
-          {done ? <Check size={16} strokeWidth={3} /> : null}
-          {t('agenda.addStep', { step: num(habit.quick_step) })}
-        </button>
-      )
-      break
-    }
-
-    case 'negative':
-      detail = value > 0 ? t('agenda.relapses', { count: value }) : t('agenda.clean')
-      control = (
-        <button
-          type="button"
-          className={`${s.habitPill} ${s.relapse}`}
-          disabled={!editable}
-          onClick={() => {
-            const previous = value
-            set(value + 1)
-            showToast({
-              message: t('agenda.relapseLogged'),
-              action: { label: t('common.undo'), run: () => set(previous) },
-            })
-          }}
-        >
-          {t('agenda.relapse')}
-        </button>
-      )
-      break
+  if (habit.type === 'quantitative') {
+    const target = habit.target ?? 1
+    detail = t('agenda.amount', { value: num(value), target: num(target), unit: habit.unit ?? '' }).trim()
+    progress = Math.min(1, value / target)
+  } else if (habit.type === 'negative') {
+    detail = value > 0 ? t('agenda.relapses', { count: value }) : t('agenda.clean')
   }
 
   const weekText = week ? t('agenda.weekProgress', week) : null
@@ -111,7 +57,7 @@ function HabitRow({ habit, date, value, editable, week, onOpenValue }: RowProps)
           </span>
         ) : null}
       </button>
-      {control}
+      <HabitQuickAction habit={habit} date={date} value={value} disabled={!editable} />
     </div>
   )
 }

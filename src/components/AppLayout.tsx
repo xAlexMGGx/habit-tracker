@@ -3,8 +3,8 @@ import { Outlet, useLocation } from 'react-router'
 import s from './AppLayout.module.css'
 import { TabBar } from './TabBar'
 
-/** Pages pushed on top of the tabs (no tab bar): settings and the habit form. */
-const FULL_SCREEN = [/^\/settings/, /^\/habits\/.+/]
+/** Pages pushed on top of the tabs (no tab bar): settings, the habit form and the habit detail. */
+const FULL_SCREEN = [/^\/settings/, /^\/habits\/.+/, /^\/tracker\/.+/]
 
 export function AppLayout() {
   const { pathname } = useLocation()

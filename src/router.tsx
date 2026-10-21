@@ -4,6 +4,7 @@ import { AgendaPage } from './features/agenda/AgendaPage'
 import { HabitFormPage } from './features/habits/HabitFormPage'
 import { HabitListPage } from './features/habits/HabitListPage'
 import { SettingsPage } from './features/settings/SettingsPage'
+import { HabitDetailPage } from './features/tracker/HabitDetailPage'
 import { TrackerPage } from './features/tracker/TrackerPage'
 
 // Hash routes (#/agenda): GitHub Pages has no SPA fallback, so a reload of
@@ -15,6 +16,7 @@ export const router = createHashRouter([
       { index: true, element: <Navigate to="/agenda" replace /> },
       { path: 'agenda', element: <AgendaPage /> },
       { path: 'tracker', element: <TrackerPage /> },
+      { path: 'tracker/:id', element: <HabitDetailPage /> },
       { path: 'habits', element: <HabitListPage /> },
       { path: 'habits/new', element: <HabitFormPage /> },
       { path: 'habits/:id', element: <HabitFormPage /> },

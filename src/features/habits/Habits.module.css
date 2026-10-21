@@ -150,6 +150,62 @@
   color: var(--accent);
 }
 
+.vizTitle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-right: calc(var(--gutter) + 4px);
+}
+
+.helpBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  margin-bottom: 4px;
+  border-radius: 18px;
+  color: var(--accent);
+}
+
+.helpBtn:active {
+  background: var(--fill);
+}
+
+.previewCard {
+  margin: 0 var(--gutter) 12px;
+  padding: 12px 14px 16px;
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+}
+
+.previewCard > div {
+  display: flex;
+  justify-content: center;
+}
+
+.previewCard > div > * {
+  width: 100%;
+}
+
+.previewLabel {
+  display: block;
+  margin-bottom: 10px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  color: var(--text-2);
+}
+
+.vizParams {
+  margin-top: 12px;
+}
+
+.paramControl {
+  width: 150px;
+}
+
 .radio {
   flex: none;
   width: 22px;
