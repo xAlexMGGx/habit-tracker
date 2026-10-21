@@ -6,8 +6,16 @@
     <title>Habit tracker</title>
     <meta name="description" content="Habits & to-dos" />
     <meta name="color-scheme" content="light dark" />
-    <meta name="theme-color" content="#f2f2f7" media="(prefers-color-scheme: light)" />
-    <meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)" />
+    <meta name="theme-color" content="#f2f2f7" />
+    <script>
+      // Apply the light/dark choice from Ajustes before the first paint (see src/lib/theme.ts).
+      try {
+        var t = localStorage.getItem('ht:theme')
+        if (t === 'light' || t === 'dark') document.documentElement.dataset.theme = t
+        var dark = t === 'dark' || (t !== 'light' && matchMedia('(prefers-color-scheme: dark)').matches)
+        document.querySelector('meta[name="theme-color"]').content = dark ? '#000000' : '#f2f2f7'
+      } catch (e) {}
+    </script>
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-title" content="Habit tracker" />

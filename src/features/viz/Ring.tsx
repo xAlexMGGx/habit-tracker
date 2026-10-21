@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next'
 import { formatPercent } from '../../lib/habitMeta'
-import { periodRate } from '../../lib/stats'
+import { periodProgress } from '../../lib/stats'
 import type { VizProps } from './types'
 import s from './viz.module.css'
 
@@ -10,13 +10,13 @@ const GEOMETRY = {
   full: { box: 188, stroke: 18 },
 }
 
-/** Completion of the current week or month (SPEC §7, period set in the habit). */
+/** Progress towards everything due this week or month (SPEC §7, period set in the habit). */
 export function Ring({ habit, logs, today, size, config }: VizProps) {
   const { t, i18n } = useTranslation()
   const { box, stroke } = GEOMETRY[size]
   const r = (box - stroke) / 2
   const circumference = 2 * Math.PI * r
-  const { done, total, pct } = periodRate(habit, logs, today, config.ringPeriod)
+  const { done, total, pct } = periodProgress(habit, logs, today, config.ringPeriod)
 
   return (
     <div className={s.ring}>

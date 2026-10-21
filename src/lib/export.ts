@@ -57,7 +57,7 @@ export function buildCsvFiles(data: ExportData, now = new Date()): File[] {
   return [
     csv('habits', toCsv(data.habits, habitColumns)),
     csv('habit-logs', toCsv(logs, ['log_date', 'habit_id', 'habit_name', 'value'])),
-    csv('todos', toCsv(data.todos, ['id', 'title', 'due_date', 'completed_at', 'created_at'])),
+    csv('todos', toCsv(data.todos, ['id', 'title', 'due_date', 'priority', 'started_at', 'completed_at', 'notes', 'created_at'])),
   ]
 }
 

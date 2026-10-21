@@ -60,7 +60,7 @@
     "body": "Crea el fichero .env.local con VITE_SUPABASE_URL y VITE_SUPABASE_ANON_KEY (mira el README) y reinicia el servidor."
   },
   "auth": {
-    "subtitle": "Inicia sesión para ver tus hábitos y to-dos.",
+    "subtitle": "Inicia sesión para ver tus hábitos y tareas.",
     "email": "Email",
     "password": "Contraseña",
     "signIn": "Iniciar sesión",
@@ -101,26 +101,26 @@
     "signOut": "Cerrar sesión"
   },
   "agenda": {
-    "todos": "To-dos",
+    "todos": "Tareas",
     "habits": "Hábitos",
     "counter": "{{done}}/{{total}}",
     "jumpToDate": "Ir a una fecha",
     "previousWeek": "Semana anterior",
     "nextWeek": "Semana siguiente",
-    "hasTodos": "Tiene to-dos",
+    "hasTodos": "Tiene tareas",
     "lockedTitle": "Día de solo lectura",
     "lockedAction": "¿Quieres editar este día?",
     "unlockConfirmTitle": "¿Editar este día?",
     "unlockConfirmBody": "Han pasado más de 14 días. Los cambios recalcularán tus rachas y estadísticas.",
     "unlockConfirm": "Editar",
-    "noTodos": "No hay to-dos para este día.",
+    "noTodos": "No hay tareas para este día.",
     "noTodosHint": "Pulsa + para añadir uno.",
     "pending": "Pendientes de días anteriores",
-    "newTodo": "Nuevo to-do",
-    "todoTitle": "To-do",
+    "newTodo": "Nueva tarea",
+    "todoTitle": "Tarea",
     "moveTo": "Mover a",
-    "deleteTodoConfirm": "¿Eliminar este to-do?",
-    "todoDeleted": "To-do eliminado",
+    "deleteTodoConfirm": "¿Eliminar esta tarea?",
+    "todoDeleted": "Tarea eliminada",
     "markDone": "Marcar como hecho",
     "markUndone": "Marcar como pendiente",
     "noHabitsToday": "No toca ningún hábito este día.",
@@ -136,7 +136,22 @@
     "relapseLogged": "Recaída registrada",
     "dayTotal": "Total del día",
     "dayRelapses": "Recaídas de este día",
-    "addStep": "+{{step}}"
+    "addStep": "+{{step}}",
+    "priority": "Prioridad",
+    "priorities": {
+      "high": "Alta",
+      "medium": "Media",
+      "low": "Baja"
+    },
+    "prioritySection": {
+      "high": "Prioridad alta",
+      "medium": "Prioridad media",
+      "low": "Prioridad baja"
+    },
+    "inProgress": "En progreso",
+    "notes": "Notas",
+    "notesPlaceholder": "Añade detalles, enlaces o lo que necesites…",
+    "hasNotes": "Tiene notas"
   },
   "habits": {
     "new": "Nuevo hábito",
@@ -282,7 +297,14 @@
     "preparing": "Preparando…",
     "saveFile": "Guardar {{kind}}",
     "exportFailed": "No se ha podido exportar.",
-    "version": "Versión {{version}}"
+    "version": "Versión {{version}}",
+    "appearance": "Apariencia",
+    "themes": {
+      "system": "Automático",
+      "light": "Claro",
+      "dark": "Oscuro"
+    },
+    "appearanceHint": "«Automático» sigue el modo claro u oscuro del iPhone. Se guarda en este dispositivo."
   },
   "update": {
     "available": "Hay una versión nueva.",
@@ -306,7 +328,8 @@
     "notDueToday": "Hoy no toca",
     "sortableCard": "tarjeta que se puede mover",
     "viewAs": "Ver como",
-    "viewAsHint": "★ es la visualización elegida. Verlo de otra forma aquí no la cambia; para eso, edita el hábito."
+    "viewAsHint": "★ es la visualización elegida. Verlo de otra forma aquí no la cambia; para eso, edita el hábito.",
+    "subtract": "Restar {{step}}"
   },
   "stats": {
     "title": "Estadísticas",
@@ -316,7 +339,7 @@
     "week": "Esta semana",
     "month": "Este mes",
     "total": "Total",
-    "hint": "Se calculan sobre los días en que tocaba el hábito. Hoy cuenta cuando lo cumples (en los negativos, cuando termina el día)."
+    "hint": "Semana y mes: días cumplidos sobre todos los que tocan en el periodo completo. Total: sobre los días que tocaban hasta hoy. Hoy cuenta cuando lo cumples (en los negativos, cuando termina el día)."
   },
   "viz": {
     "prevMonth": "Mes anterior",
@@ -388,7 +411,7 @@
     },
     "ring": {
       "example": "Leer",
-      "read": "El anillo se llena con el % de días cumplidos esta semana (de lunes a hoy) o este mes, según elijas. Debajo ves cuántos llevas de los que tocaban. Hoy cuenta en cuanto lo cumples.",
+      "read": "El anillo se llena con los días cumplidos sobre todos los que tocan en la semana (de lunes a domingo) o en el mes, según elijas: un hábito de 4 veces por semana no llega al 100 % hasta la cuarta. Debajo ves cuántos llevas.",
       "purpose": "Tener una meta corta y clara: cerrar el anillo esta semana.",
       "ideal": "Cualquier hábito, sobre todo los que no son diarios: leer entre semana, llamar a la familia."
     },

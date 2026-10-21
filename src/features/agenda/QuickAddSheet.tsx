@@ -2,7 +2,9 @@ import { ArrowUp } from 'lucide-react'
 import { type FormEvent, useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { BottomSheet } from '../../components/BottomSheet'
+import { PriorityPicker } from '../../components/PriorityPicker'
 import { makeTodo, useCreateTodo } from '../../data/todos'
+import type { TodoPriority } from '../../lib/database.types'
 import type { DateStr } from '../../lib/dates'
 import s from './Agenda.module.css'
 
@@ -18,11 +20,13 @@ export function QuickAddSheet({ open, date, dateLabel, onClose }: Props) {
   const { t } = useTranslation()
   const create = useCreateTodo()
   const [title, setTitle] = useState('')
+  const [priority, setPriority] = useState<TodoPriority>('low')
   const input = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
     if (!open) return
     setTitle('')
+    setPriority('low')
     const timer = setTimeout(() => input.current?.focus({ preventScroll: true }), 60)
     return () => clearTimeout(timer)
   }, [open])
@@ -31,7 +35,8 @@ export function QuickAddSheet({ open, date, dateLabel, onClose }: Props) {
     e.preventDefault()
     const value = title.trim()
     if (!value) return
-    create.mutate(makeTodo(value, date))
+    create.mutate(makeTodo(value, date, priority))
+    // The chosen priority stays for the next one added in a row.
     setTitle('')
     input.current?.focus({ preventScroll: true })
   }
@@ -53,6 +58,15 @@ export function QuickAddSheet({ open, date, dateLabel, onClose }: Props) {
           <ArrowUp size={20} strokeWidth={2.6} />
         </button>
       </form>
+      <div className={s.quickAddPriority}>
+        <PriorityPicker
+          value={priority}
+          onChange={(p) => {
+            setPriority(p)
+            input.current?.focus({ preventScroll: true })
+          }}
+        />
+      </div>
     </BottomSheet>
   )
 }

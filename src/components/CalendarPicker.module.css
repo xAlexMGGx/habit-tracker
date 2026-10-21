@@ -1,0 +1,93 @@
+.picker {
+  margin: 0 var(--gutter);
+  padding: 8px 10px 12px;
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 6px;
+}
+
+.month {
+  font-size: 17px;
+  font-weight: 700;
+}
+
+.nav {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 20px;
+  color: var(--accent);
+}
+
+.nav:active {
+  background: var(--fill);
+}
+
+.weekdays,
+.week {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  justify-items: center;
+}
+
+.weekdays {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-2);
+  padding: 2px 0 6px;
+}
+
+.week {
+  margin: 2px 0;
+  border-radius: 22px;
+}
+
+/* The week currently shown in the Agenda: a grey "balloon" around the row */
+.weekSelected {
+  background: var(--fill-2);
+}
+
+.day {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  font-size: 17px;
+  font-variant-numeric: tabular-nums;
+}
+
+.day:active {
+  background: var(--fill);
+}
+
+.dayToday {
+  color: var(--accent);
+  font-weight: 700;
+}
+
+.daySelected {
+  background: var(--accent);
+  color: var(--accent-contrast);
+  font-weight: 700;
+}
+
+.todayButton {
+  display: block;
+  margin: 10px auto 0;
+  padding: 8px 18px;
+  border-radius: 18px;
+  background: var(--fill);
+  color: var(--accent);
+  font-weight: 600;
+  font-size: 15px;
+}

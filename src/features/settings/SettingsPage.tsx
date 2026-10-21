@@ -13,6 +13,7 @@ import type { Language } from '../../lib/database.types'
 import { buildCsvFiles, buildJsonFile, deliverFiles, fetchExportData } from '../../lib/export'
 import { isStandalone } from '../../lib/platform'
 import { supabase } from '../../lib/supabase'
+import { type ThemePref, setThemePref, useThemePref } from '../../lib/theme'
 import { showToast } from '../../lib/toast'
 import ui from '../../styles/ui.module.css'
 import { disableFaceIdLock, enableFaceIdLock, isFaceIdAvailable, useFaceIdLockEnabled } from '../lock/appLock'
@@ -180,6 +181,7 @@ export function SettingsPage() {
   const updateSettings = useUpdateSettings()
   const [changingPassword, setChangingPassword] = useState(false)
   const [showInstall, setShowInstall] = useState(false)
+  const themePref = useThemePref()
 
   const language: Language = settings?.language ?? currentLanguage()
 
@@ -243,6 +245,22 @@ export function SettingsPage() {
             ]}
           />
         </div>
+      </div>
+
+      <div className={ui.section}>
+        <h2 className={ui.sectionTitle}>{t('settings.appearance')}</h2>
+        <div className={s.inset}>
+          <Segmented<ThemePref>
+            value={themePref}
+            onChange={setThemePref}
+            options={[
+              { value: 'system', label: t('settings.themes.system') },
+              { value: 'light', label: t('settings.themes.light') },
+              { value: 'dark', label: t('settings.themes.dark') },
+            ]}
+          />
+        </div>
+        <p className={ui.sectionFooter}>{t('settings.appearanceHint')}</p>
       </div>
 
       <ExportSection />

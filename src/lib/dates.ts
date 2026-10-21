@@ -54,6 +54,37 @@ export function weekDates(monday: DateStr): DateStr[] {
   return Array.from({ length: 7 }, (_, i) => addDays(monday, i))
 }
 
+export function monthStart(s: DateStr): DateStr {
+  return `${s.slice(0, 7)}-01`
+}
+
+export function monthEnd(s: DateStr): DateStr {
+  const [y, m] = s.split('-').map(Number)
+  const last = new Date(Date.UTC(y, m, 0)).getUTCDate()
+  return `${s.slice(0, 7)}-${pad(last)}`
+}
+
+/** 'YYYY-MM' moved by `delta` months. */
+export function shiftMonth(month: string, delta: number): string {
+  const [y, m] = month.split('-').map(Number)
+  const d = new Date(Date.UTC(y, m - 1 + delta, 1))
+  return `${d.getUTCFullYear()}-${pad(d.getUTCMonth() + 1)}`
+}
+
+/** Monday → Sunday rows covering a month ('YYYY-MM'); days outside it are null. */
+export function monthWeeks(month: string): (DateStr | null)[][] {
+  const rows: (DateStr | null)[][] = []
+  for (let monday = weekStart(`${month}-01`); monday.slice(0, 7) <= month; monday = addDays(monday, 7)) {
+    rows.push(
+      Array.from({ length: 7 }, (_, i) => {
+        const d = addDays(monday, i)
+        return d.slice(0, 7) === month ? d : null
+      }),
+    )
+  }
+  return rows
+}
+
 export function isFuture(date: DateStr, today: DateStr): boolean {
   return date > today
 }

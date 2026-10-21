@@ -1,5 +1,5 @@
 import { keepPreviousData, type QueryClient, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import type { Todo } from '../lib/database.types'
+import type { Todo, TodoPriority } from '../lib/database.types'
 import type { DateStr } from '../lib/dates'
 import { newId } from '../lib/platform'
 import { fetchAllRows, supabase } from '../lib/supabase'
@@ -86,6 +86,9 @@ export function useCreateTodo() {
         due_date: todo.due_date,
         completed_at: todo.completed_at,
         reminder_time: todo.reminder_time,
+        priority: todo.priority,
+        started_at: todo.started_at,
+        notes: todo.notes,
         created_at: todo.created_at,
       })
       if (error) throw error
@@ -96,8 +99,8 @@ export function useCreateTodo() {
   })
 }
 
-/** Builds a new to-do row for useCreateTodo. */
-export function makeTodo(title: string, dueDate: DateStr): Todo {
+/** Builds a new to-do row for useCreateTodo. New to-dos are green unless chosen otherwise. */
+export function makeTodo(title: string, dueDate: DateStr, priority: TodoPriority = 'low'): Todo {
   const now = new Date().toISOString()
   return {
     id: newId(),
@@ -106,12 +109,15 @@ export function makeTodo(title: string, dueDate: DateStr): Todo {
     due_date: dueDate,
     completed_at: null,
     reminder_time: null,
+    priority,
+    started_at: null,
+    notes: null,
     created_at: now,
     updated_at: now,
   }
 }
 
-type TodoPatch = Partial<Pick<Todo, 'title' | 'due_date' | 'completed_at'>>
+export type TodoPatch = Partial<Pick<Todo, 'title' | 'due_date' | 'completed_at' | 'priority' | 'started_at' | 'notes'>>
 
 export function useUpdateTodo() {
   const qc = useQueryClient()

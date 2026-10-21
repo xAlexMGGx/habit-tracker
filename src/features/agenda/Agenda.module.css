@@ -9,25 +9,6 @@
   font-weight: 600;
 }
 
-.dateOverlay {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  opacity: 0;
-  border: 0;
-  padding: 0;
-  margin: 0;
-  -webkit-appearance: none;
-  appearance: none;
-  cursor: pointer;
-}
-
-label:has(> .dateOverlay) {
-  position: relative;
-  overflow: hidden;
-}
-
 .sticky {
   position: sticky;
   top: var(--safe-top);
@@ -104,7 +85,8 @@ label:has(> .dateOverlay) {
   height: 26px;
   margin: -1px 0;
   border-radius: 50%;
-  border: 2px solid var(--text-3);
+  /* --p: priority color (traffic light) */
+  border: 2px solid var(--p, var(--text-3));
   color: #fff;
   transition: background 0.15s, border-color 0.15s;
 }
@@ -117,8 +99,13 @@ label:has(> .dateOverlay) {
 }
 
 .checkOn {
-  background: var(--accent);
-  border-color: var(--accent);
+  background: var(--p, var(--accent));
+  border-color: var(--p, var(--accent));
+}
+
+/* In progress: half filled */
+.checkStarted {
+  background: linear-gradient(90deg, var(--p) 50%, transparent 50%);
 }
 
 .check:disabled {
@@ -140,6 +127,35 @@ label:has(> .dateOverlay) {
 
 .todoTitle {
   overflow-wrap: anywhere;
+}
+
+.notesIcon {
+  display: inline-block;
+  margin-left: 6px;
+  vertical-align: -1px;
+  color: var(--text-2);
+}
+
+/* Priority blocks: red, orange, green, each one a bit apart */
+.prioritySection {
+  margin-bottom: 18px;
+}
+
+.priorityTitle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.priorityDot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--p);
+}
+
+.priorityGroup {
+  box-shadow: inset 4px 0 0 var(--p);
 }
 
 .todoDone .todoTitle {
@@ -346,4 +362,31 @@ label:has(> .dateOverlay) {
   font-size: 40px;
   font-weight: 700;
   font-variant-numeric: tabular-nums;
+}
+
+/* To-do details */
+.sheetBlock {
+  margin: 0 var(--gutter);
+}
+
+.startedIcon {
+  color: var(--accent);
+}
+
+.notesInput {
+  display: block;
+  width: calc(100% - 2 * var(--gutter));
+  margin: 0 var(--gutter);
+  min-height: 88px;
+  border: none;
+  outline: none;
+  resize: vertical;
+  border-radius: var(--radius);
+  background: var(--surface);
+  padding: 12px 16px;
+  line-height: 1.4;
+}
+
+.quickAddPriority {
+  margin: 10px var(--gutter) 0;
 }

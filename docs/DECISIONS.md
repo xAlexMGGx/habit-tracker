@@ -51,6 +51,32 @@ Complementa a [SPEC.md](../SPEC.md). Cada punto se acordó con el usuario o es u
 - **Exportar:** JSON (todo en un fichero) o CSV (habits, habit-logs y todos). Se hace en dos toques (preparar → guardar) porque iOS solo permite abrir la hoja de compartir directamente desde un toque.
 - **Cambiar contraseña** desde Ajustes → Cuenta.
 
+## Cambios tras el feedback de las fases 1-3
+
+- **Nombre:** "To-dos" pasa a ser **"Tareas"** en español y **"TO-DO"** en inglés, en toda la interfaz.
+- **Prioridad de las tareas** (columna `todos.priority`):
+  - Semáforo: alta (rojo) > media (naranja) > baja (verde).
+  - Una tarea nueva es verde, pero se puede elegir el color en la hoja del "+". El color elegido se mantiene para las siguientes que añadas seguidas.
+  - En el día, las tareas se agrupan en bloques separados: rojo, naranja y verde, cada uno con una franja de su color.
+  - El círculo de cada tarea lleva el color de su prioridad.
+  - Pendientes de días anteriores: primero por prioridad y luego de la más antigua a la más reciente.
+- **Detalles de la tarea:**
+  - Al tocarla se pueden cambiar título, prioridad, "En progreso" y notas, moverla o eliminarla.
+  - **Mover ya no cierra la hoja**, así que se puede cambiar la prioridad en el mismo paso.
+- **En progreso** (`todos.started_at`): el círculo se ve medio relleno. Se activa con un interruptor en los detalles.
+- **Notas** (`todos.notes`, hasta 2000 caracteres):
+  - Un único campo de texto libre, visible solo en los detalles.
+  - En la lista solo aparece un icono 💬 discreto si la tarea tiene notas.
+- **Calendario propio** para "Ir a una fecha" y "Elegir fecha": el selector nativo de iOS no permite marcar la semana seleccionada. La semana actual aparece dentro de un "globo" gris.
+- **Anillo y estadísticas de semana y mes:** se miden sobre el **periodo completo**: días cumplidos / todos los días que tocan en la semana (de lunes a domingo) o en el mes, incluidos los que aún no han llegado.
+  - Un hábito de 4 veces por semana no marca 100 % hasta la cuarta.
+  - El % total sigue siendo "hasta hoy". El orden por % (últimos 30 días) no cambia.
+- **Restar en el detalle de Seguimiento:** fila "Hoy" con − / cantidad / + en los cuantitativos, y con las recaídas en los negativos. Al tocar la cantidad se abre el mismo editor que en la Agenda.
+- **Tema:**
+  - Ajustes → Apariencia: Automático (sigue al iPhone), Claro u Oscuro.
+  - Se guarda **en el dispositivo** (`localStorage`), no en la cuenta, para aplicarlo antes de pintar la pantalla y evitar un destello del otro tema.
+  - Pendiente de comprobar en el iPhone: el color de la barra de estado de iOS al forzar un tema distinto al del sistema.
+
 ## Seguimiento (fase 2)
 
 - **Tarjetas:** una por hábito activo, incluidos los que hoy no tocan, que muestran "Hoy no toca".

@@ -1,4 +1,4 @@
-import { ChevronLeft, Pencil } from 'lucide-react'
+import { ChevronLeft, Minus, Pencil } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useLocation, useNavigate, useParams } from 'react-router'
@@ -6,17 +6,19 @@ import { HabitQuickAction } from '../../components/HabitQuickAction'
 import { PageHeader } from '../../components/PageHeader'
 import { HabitIcon, Segmented, Spinner } from '../../components/controls'
 import { useHabits } from '../../data/habits'
-import { useHabitLogs, useLogIndex } from '../../data/logs'
+import { useHabitLogs, useLogIndex, useSetLogValue } from '../../data/logs'
 import { useToday } from '../../hooks/useToday'
 import { useDateLocale } from '../../i18n'
 import type { Habit, VizType } from '../../lib/database.types'
+import type { DateStr } from '../../lib/dates'
 import { frequencySummary, targetSummary } from '../../lib/format'
 import type { JarPeriod } from '../../lib/jar'
-import { formatPercent, habitColorStyle } from '../../lib/habitMeta'
+import { formatNumber, formatPercent, habitColorStyle } from '../../lib/habitMeta'
 import { habitsForDay, logsFor } from '../../lib/schedule'
 import { type Rate, computeStats } from '../../lib/stats'
 import { type BarsRange, type RingPeriod, availableViz, effectiveViz, readVizConfig } from '../../lib/vizConfig'
 import ui from '../../styles/ui.module.css'
+import { ValueSheet } from '../agenda/ValueSheet'
 import { HabitViz } from '../viz/HabitViz'
 import s from './Tracker.module.css'
 
@@ -26,6 +28,44 @@ function StatTile({ label, value, sub }: { label: string; value: string; sub?: s
       <span className={s.statValue}>{value}</span>
       <span className={s.statLabel}>{label}</span>
       {sub ? <span className={s.statSub}>{sub}</span> : null}
+    </div>
+  )
+}
+
+/**
+ * Today's amount with − and + (quantitative), or today's relapses (negative).
+ * Tapping the number opens the same editor as in the Agenda.
+ */
+function TodayControl({ habit, value, today }: { habit: Habit; value: number; today: DateStr }) {
+  const { t, i18n } = useTranslation()
+  const setLog = useSetLogValue()
+  const [editing, setEditing] = useState(false)
+  const step = habit.type === 'negative' ? 1 : habit.quick_step
+  const num = (n: number) => formatNumber(n, i18n.language)
+  const label =
+    habit.type === 'quantitative'
+      ? t('agenda.amount', { value: num(value), target: num(habit.target ?? 0), unit: habit.unit ?? '' }).trim()
+      : value > 0
+        ? t('agenda.relapses', { count: value })
+        : t('agenda.clean')
+
+  return (
+    <div className={s.todayControl}>
+      <span className={s.todayLabel}>{t('common.today')}</span>
+      <button
+        type="button"
+        className={s.minus}
+        aria-label={t('tracker.subtract', { step: num(step) })}
+        disabled={value <= 0}
+        onClick={() => setLog.mutate({ habitId: habit.id, date: today, value: Math.max(0, Math.round((value - step) * 100) / 100) })}
+      >
+        <Minus size={18} strokeWidth={2.6} />
+      </button>
+      <button type="button" className={s.todayValue} onClick={() => setEditing(true)}>
+        {label}
+      </button>
+      <HabitQuickAction habit={habit} date={today} value={value} />
+      <ValueSheet habit={editing ? habit : null} date={today} value={value} onClose={() => setEditing(false)} />
     </div>
   )
 }
@@ -57,8 +97,11 @@ function Detail({ habit }: { habit: Habit }) {
           <h2 className={s.heroName}>{habit.name}</h2>
           <p className={s.heroSummary}>{summary}</p>
         </div>
-        {actionable ? <HabitQuickAction habit={habit} date={today} value={logs.get(today) ?? 0} /> : null}
+        {actionable && habit.type === 'boolean' ? (
+          <HabitQuickAction habit={habit} date={today} value={logs.get(today) ?? 0} />
+        ) : null}
       </div>
+      {actionable && habit.type !== 'boolean' ? <TodayControl habit={habit} value={logs.get(today) ?? 0} today={today} /> : null}
 
       <div className={s.detailCard}>
         <HabitViz habit={habit} logs={logs} today={today} size="full" config={config} viz={viz} />

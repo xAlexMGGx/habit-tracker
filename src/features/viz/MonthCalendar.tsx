@@ -3,31 +3,11 @@ import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { type CSSProperties, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useDateLocale } from '../../i18n'
-import { type DateStr, addDays, fromDateStr, weekStart } from '../../lib/dates'
+import { fromDateStr, monthWeeks, shiftMonth } from '../../lib/dates'
 import { capitalize } from '../../lib/format'
 import { type DayStatus, dayStatusFn, intensity } from '../../lib/stats'
 import type { VizProps } from './types'
 import s from './viz.module.css'
-
-function shiftMonth(month: string, delta: number): string {
-  const [y, m] = month.split('-').map(Number)
-  const d = new Date(y, m - 1 + delta, 1)
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
-}
-
-/** Mondays → Sundays covering the month; days outside it are null. */
-function monthWeeks(month: string): (DateStr | null)[][] {
-  const rows: (DateStr | null)[][] = []
-  for (let monday = weekStart(`${month}-01`); monday.slice(0, 7) <= month; monday = addDays(monday, 7)) {
-    rows.push(
-      Array.from({ length: 7 }, (_, i) => {
-        const d = addDays(monday, i)
-        return d.slice(0, 7) === month ? d : null
-      }),
-    )
-  }
-  return rows
-}
 
 const CLASS: Record<DayStatus, string> = {
   done: s.calDone,

@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { addDays } from './dates'
 import type { ScheduleHabit } from './schedule'
-import { computeStats, dayStatusFn, intensity, periodRate } from './stats'
+import { computeStats, dayStatusFn, intensity, periodProgress } from './stats'
 
 const base: ScheduleHabit = {
   type: 'boolean',
@@ -91,12 +91,13 @@ describe('computeStats', () => {
     expect(computeStats(h, logs({ [TODAY]: 2 }), TODAY).currentStreak).toBe(0)
   })
 
-  it('percentages use natural week and month, and ignore a pending today', () => {
-    // Week of Monday 19th: done Mon, missed Tue, today pending → 1/2
+  it('week and month are measured against the whole period', () => {
+    // Week of Monday 19th: done Mon only → 1 of the 7 days of the week
     const st = computeStats(base, logs({ '2026-10-19': 1 }), TODAY)
-    expect(st.week).toEqual({ done: 1, total: 2, pct: 0.5 })
-    expect(st.month.total).toBe(20)
-    expect(st.month.done).toBe(1)
+    expect(st.week).toEqual({ done: 1, total: 7, pct: 1 / 7 })
+    expect(st.month).toEqual({ done: 1, total: 31, pct: 1 / 31 })
+    // Total stays "so far": 1 done out of the 20 due days before today
+    expect(st.total).toEqual({ done: 1, total: 20, pct: 0.05 })
   })
 
   it('last30 window', () => {
@@ -121,11 +122,34 @@ describe('computeStats', () => {
   })
 })
 
-describe('periodRate & intensity', () => {
-  it('ring week/month', () => {
+describe('periodProgress (ring) & intensity', () => {
+  it('daily: done so far over the whole week / month', () => {
     const l = logs({ '2026-10-19': 1, '2026-10-20': 1 })
-    expect(periodRate(base, l, TODAY, 'week')).toEqual({ done: 2, total: 2, pct: 1 })
-    expect(periodRate(base, l, TODAY, 'month').total).toBe(20)
+    expect(periodProgress(base, l, TODAY, 'week')).toEqual({ done: 2, total: 7, pct: 2 / 7 })
+    expect(periodProgress(base, l, TODAY, 'month').total).toBe(31)
+  })
+
+  it('X times a week only reaches 100 % with all X done', () => {
+    // 4 a week, planned Mon–Thu; today is Wednesday
+    const h = { ...base, frequency_type: 'times_per_week' as const, frequency_times: 4, frequency_days: [1, 2, 3, 4] }
+    expect(periodProgress(h, logs({ '2026-10-19': 1, '2026-10-20': 1 }), TODAY, 'week')).toEqual({ done: 2, total: 4, pct: 0.5 })
+    const all = logs({ '2026-10-19': 1, '2026-10-20': 1, [TODAY]: 1, '2026-10-17': 1 })
+    expect(periodProgress(h, all, TODAY, 'week')).toEqual({ done: 3, total: 4, pct: 0.75 }) // the 17th is last week
+    expect(periodProgress(h, logs({ '2026-10-19': 1, '2026-10-20': 1, [TODAY]: 1, '2026-10-22': 1 }), '2026-10-22', 'week').pct).toBe(1)
+  })
+
+  it('weekdays: only the due days of the week count', () => {
+    const h = { ...base, frequency_type: 'weekdays' as const, frequency_days: [1, 3, 5] }
+    expect(periodProgress(h, logs({ '2026-10-19': 1 }), TODAY, 'week')).toEqual({ done: 1, total: 3, pct: 1 / 3 })
+  })
+
+  it('negative: clean days so far over the whole week; today counts when it ends', () => {
+    const h = { ...base, type: 'negative' as const }
+    expect(periodProgress(h, logs({}), TODAY, 'week')).toEqual({ done: 2, total: 7, pct: 2 / 7 })
+  })
+
+  it('a habit that starts mid-week only counts from its start', () => {
+    expect(periodProgress({ ...base, start_date: '2026-10-22' }, logs({}), TODAY, 'week').total).toBe(4)
   })
 
   it('intensity', () => {

@@ -39,7 +39,12 @@ Las migraciones están en [supabase/migrations/](supabase/migrations/). Crean la
 3. Pulsa **Run**. Debe terminar con *Success. No rows returned*.
 4. Comprueba en **Table Editor** que aparecen las 4 tablas y que cada una muestra el candado de **RLS enabled**.
 
-Cuando haya migraciones nuevas en fases posteriores, ejecuta solo los ficheros nuevos, en orden de nombre.
+Cuando haya migraciones nuevas en fases posteriores, ejecuta solo los ficheros nuevos, en orden de nombre:
+
+| Fichero | Qué añade |
+|---|---|
+| `20261020000000_init.sql` | Tablas, RLS y funciones base (fase 1) |
+| `20261022000000_todo_details.sql` | Prioridad (semáforo), "en progreso" y notas en las tareas |
 
 ### Opción B — Supabase CLI
 

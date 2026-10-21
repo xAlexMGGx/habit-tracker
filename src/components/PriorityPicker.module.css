@@ -1,0 +1,36 @@
+.picker {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+.option {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 44px;
+  border-radius: var(--radius);
+  background: var(--surface);
+  font-size: 15px;
+  font-weight: 500;
+  box-shadow: inset 0 0 0 2px transparent;
+  transition: box-shadow 0.15s, background 0.15s;
+}
+
+.dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 2px solid var(--p);
+}
+
+.on {
+  background: color-mix(in srgb, var(--p) 14%, var(--surface));
+  box-shadow: inset 0 0 0 2px var(--p);
+  font-weight: 700;
+}
+
+.on .dot {
+  background: var(--p);
+}

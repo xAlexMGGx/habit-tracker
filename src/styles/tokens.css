@@ -1,5 +1,5 @@
 :root {
-  color-scheme: light dark;
+  color-scheme: light;
 
   /* Surfaces & text (iOS system colors) */
   --bg: #f2f2f7;
@@ -15,12 +15,18 @@
   --backdrop: rgba(0, 0, 0, 0.32);
   --bar-bg: rgba(249, 249, 249, 0.86);
   --segment-active: #ffffff;
+  --toast-bg: rgba(30, 30, 32, 0.94);
 
   --accent: #007aff;
   --accent-contrast: #ffffff;
   --danger: #ff3b30;
   --success: #34c759;
   --warning: #ff9500;
+
+  /* To-do priority (traffic light) */
+  --prio-high: var(--danger);
+  --prio-medium: var(--warning);
+  --prio-low: var(--success);
 
   /* Habit palette — keys stored in habits.color */
   --habit-red: #ff3b30;
@@ -52,8 +58,50 @@
   --gutter: 16px;
 }
 
+/* Dark palette: chosen in Ajustes, or "Automático" with the iPhone in dark mode.
+   Kept in two blocks because a media query and an attribute selector can't share one. */
+:root[data-theme='dark'] {
+  color-scheme: dark;
+  --toast-bg: rgba(58, 58, 60, 0.96);
+  --bg: #000000;
+  --surface: #1c1c1e;
+  --surface-2: #2c2c2e;
+  --surface-raised: #2c2c2e;
+  --text: #ffffff;
+  --text-2: rgba(235, 235, 245, 0.62);
+  --text-3: rgba(235, 235, 245, 0.3);
+  --separator: rgba(84, 84, 88, 0.6);
+  --fill: rgba(120, 120, 128, 0.24);
+  --fill-2: rgba(120, 120, 128, 0.36);
+  --backdrop: rgba(0, 0, 0, 0.55);
+  --bar-bg: rgba(22, 22, 24, 0.86);
+  --segment-active: #636366;
+
+  --accent: #0a84ff;
+  --danger: #ff453a;
+  --success: #30d158;
+  --warning: #ff9f0a;
+
+  --habit-red: #ff453a;
+  --habit-orange: #ff9f0a;
+  --habit-yellow: #ffd60a;
+  --habit-green: #30d158;
+  --habit-mint: #63e6e2;
+  --habit-teal: #40cbe0;
+  --habit-cyan: #64d2ff;
+  --habit-blue: #0a84ff;
+  --habit-indigo: #5e5ce6;
+  --habit-purple: #bf5af2;
+  --habit-pink: #ff375f;
+  --habit-brown: #ac8e68;
+
+  --shadow: 0 6px 24px rgba(0, 0, 0, 0.5);
+}
+
 @media (prefers-color-scheme: dark) {
-  :root {
+  :root:not([data-theme='light']) {
+    color-scheme: dark;
+    --toast-bg: rgba(58, 58, 60, 0.96);
     --bg: #000000;
     --surface: #1c1c1e;
     --surface-2: #2c2c2e;

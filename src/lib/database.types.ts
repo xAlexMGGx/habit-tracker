@@ -9,6 +9,8 @@ export type VizType = 'heatmap' | 'calendar' | 'ring' | 'bars' | 'days_since' | 
 export type TrackerSort = 'manual' | 'streak' | 'completion' | 'pending_first'
 export type AgendaSubtab = 'todos' | 'habits'
 export type Language = 'es' | 'en'
+/** Traffic light: high = red, medium = orange, low = green. */
+export type TodoPriority = 'high' | 'medium' | 'low'
 
 export type Database = {
   public: {
@@ -138,6 +140,9 @@ export type Database = {
           due_date: string
           completed_at: string | null
           reminder_time: string | null
+          priority: TodoPriority
+          started_at: string | null
+          notes: string | null
           created_at: string
           updated_at: string
         }
@@ -148,6 +153,9 @@ export type Database = {
           due_date: string
           completed_at?: string | null
           reminder_time?: string | null
+          priority?: TodoPriority
+          started_at?: string | null
+          notes?: string | null
           created_at?: string
         }
         Update: {
@@ -155,6 +163,9 @@ export type Database = {
           due_date?: string
           completed_at?: string | null
           reminder_time?: string | null
+          priority?: TodoPriority
+          started_at?: string | null
+          notes?: string | null
         }
         Relationships: []
       }

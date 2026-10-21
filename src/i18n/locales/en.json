@@ -60,7 +60,7 @@
     "body": "Create a .env.local file with VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY (see the README) and restart the dev server."
   },
   "auth": {
-    "subtitle": "Sign in to see your habits and to-dos.",
+    "subtitle": "Sign in to see your habits and TO-DOs.",
     "email": "Email",
     "password": "Password",
     "signIn": "Sign in",
@@ -101,26 +101,26 @@
     "signOut": "Sign out"
   },
   "agenda": {
-    "todos": "To-dos",
+    "todos": "TO-DO",
     "habits": "Habits",
     "counter": "{{done}}/{{total}}",
     "jumpToDate": "Go to a date",
     "previousWeek": "Previous week",
     "nextWeek": "Next week",
-    "hasTodos": "Has to-dos",
+    "hasTodos": "Has TO-DOs",
     "lockedTitle": "Read-only day",
     "lockedAction": "Do you want to edit this day?",
     "unlockConfirmTitle": "Edit this day?",
     "unlockConfirmBody": "It's more than 14 days ago. Changes will recalculate your streaks and stats.",
     "unlockConfirm": "Edit",
-    "noTodos": "No to-dos for this day.",
+    "noTodos": "No TO-DOs for this day.",
     "noTodosHint": "Tap + to add one.",
     "pending": "Pending from previous days",
-    "newTodo": "New to-do",
-    "todoTitle": "To-do",
+    "newTodo": "New TO-DO",
+    "todoTitle": "TO-DO",
     "moveTo": "Move to",
-    "deleteTodoConfirm": "Delete this to-do?",
-    "todoDeleted": "To-do deleted",
+    "deleteTodoConfirm": "Delete this TO-DO?",
+    "todoDeleted": "TO-DO deleted",
     "markDone": "Mark as done",
     "markUndone": "Mark as not done",
     "noHabitsToday": "No habits due on this day.",
@@ -136,7 +136,22 @@
     "relapseLogged": "Relapse logged",
     "dayTotal": "Total for the day",
     "dayRelapses": "Relapses on this day",
-    "addStep": "+{{step}}"
+    "addStep": "+{{step}}",
+    "priority": "Priority",
+    "priorities": {
+      "high": "High",
+      "medium": "Medium",
+      "low": "Low"
+    },
+    "prioritySection": {
+      "high": "High priority",
+      "medium": "Medium priority",
+      "low": "Low priority"
+    },
+    "inProgress": "In progress",
+    "notes": "Notes",
+    "notesPlaceholder": "Add details, links, anything you need…",
+    "hasNotes": "Has notes"
   },
   "habits": {
     "new": "New habit",
@@ -282,7 +297,14 @@
     "preparing": "Preparing…",
     "saveFile": "Save {{kind}}",
     "exportFailed": "Couldn't export.",
-    "version": "Version {{version}}"
+    "version": "Version {{version}}",
+    "appearance": "Appearance",
+    "themes": {
+      "system": "Automatic",
+      "light": "Light",
+      "dark": "Dark"
+    },
+    "appearanceHint": "“Automatic” follows your iPhone’s light or dark mode. Saved on this device."
   },
   "update": {
     "available": "A new version is available.",
@@ -306,7 +328,8 @@
     "notDueToday": "Not due today",
     "sortableCard": "movable card",
     "viewAs": "View as",
-    "viewAsHint": "★ is the chosen visualization. Viewing it another way here doesn’t change it; edit the habit for that."
+    "viewAsHint": "★ is the chosen visualization. Viewing it another way here doesn’t change it; edit the habit for that.",
+    "subtract": "Subtract {{step}}"
   },
   "stats": {
     "title": "Stats",
@@ -316,7 +339,7 @@
     "week": "This week",
     "month": "This month",
     "total": "Total",
-    "hint": "Calculated over the days the habit was due. Today counts once you complete it (for negative habits, once the day is over)."
+    "hint": "Week and month: days done out of every day due in the whole period. Total: out of the days due up to today. Today counts once you complete it (for negative habits, once the day is over)."
   },
   "viz": {
     "prevMonth": "Previous month",
@@ -388,7 +411,7 @@
     },
     "ring": {
       "example": "Read",
-      "read": "The ring fills with the % of due days completed this week (Monday to today) or this month, as you choose. Below it you see how many you’ve done out of those due. Today counts as soon as you complete it.",
+      "read": "The ring fills with the days done out of every day due this week (Monday to Sunday) or this month, as you choose: a 4-times-a-week habit only reaches 100% with the fourth. Below it you see how many you’ve done.",
       "purpose": "A short, clear goal: close the ring this week.",
       "ideal": "Any habit, especially non-daily ones: reading on weekdays, calling family."
     },

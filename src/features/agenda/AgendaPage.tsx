@@ -1,6 +1,7 @@
 import { CalendarSearch, Lock, Plus } from 'lucide-react'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { CalendarPicker } from '../../components/CalendarPicker'
 import { useConfirm } from '../../components/ConfirmProvider'
 import { PageHeader } from '../../components/PageHeader'
 import { Segmented, Spinner } from '../../components/controls'
@@ -37,6 +38,7 @@ export function AgendaPage() {
   const [openTodo, setOpenTodo] = useState<Todo | null>(null)
   const [valueHabit, setValueHabit] = useState<Habit | null>(null)
   const [adding, setAdding] = useState(false)
+  const [pickingDate, setPickingDate] = useState(false)
 
   // After midnight, follow the new "today" if the user was looking at the old one.
   const previousToday = useRef(today)
@@ -108,15 +110,9 @@ export function AgendaPage() {
                 {t('common.today')}
               </button>
             ) : null}
-            <label className={ui.iconBtn} aria-label={t('agenda.jumpToDate')}>
+            <button type="button" className={ui.iconBtn} aria-label={t('agenda.jumpToDate')} onClick={() => setPickingDate(true)}>
               <CalendarSearch size={23} strokeWidth={1.8} />
-              <input
-                type="date"
-                className={s.dateOverlay}
-                value={selected}
-                onChange={(e) => e.target.value && select(e.target.value)}
-              />
-            </label>
+            </button>
           </>
         }
       />
@@ -209,6 +205,17 @@ export function AgendaPage() {
         onClose={() => setAdding(false)}
       />
       <TodoSheet todo={openTodo} onClose={() => setOpenTodo(null)} />
+      <CalendarPicker
+        open={pickingDate}
+        value={selected}
+        today={today}
+        title={t('agenda.jumpToDate')}
+        onClose={() => setPickingDate(false)}
+        onSelect={(date) => {
+          select(date)
+          setPickingDate(false)
+        }}
+      />
       <ValueSheet
         habit={valueHabit}
         date={selected}
