@@ -231,3 +231,16 @@
 .radioOn {
   border: 7px solid var(--accent);
 }
+
+/* Reminders */
+.timeInput {
+  -webkit-appearance: none;
+  appearance: none;
+  min-height: 32px;
+  font-variant-numeric: tabular-nums;
+}
+
+.addIcon,
+.addLabel {
+  color: var(--accent);
+}

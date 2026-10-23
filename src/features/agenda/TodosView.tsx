@@ -1,4 +1,4 @@
-import { Check, MessageSquare } from 'lucide-react'
+import { Bell, Check, MessageSquare } from 'lucide-react'
 import type { CSSProperties } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useUpdateTodo } from '../../data/todos'
@@ -42,6 +42,12 @@ export function TodoRow({ todo, editable, subtitle, onOpen }: RowProps) {
           {todo.title}
           {todo.notes?.trim() ? (
             <MessageSquare size={13} className={s.notesIcon} aria-label={t('agenda.hasNotes')} />
+          ) : null}
+          {todo.reminder_time && !done ? (
+            <span className={s.reminderTag} aria-label={t('agenda.reminderAt', { time: todo.reminder_time.slice(0, 5) })}>
+              <Bell size={12} />
+              {todo.reminder_time.slice(0, 5)}
+            </span>
           ) : null}
         </span>
         {subtitle ? <span className={s.todoSubtitle}>{subtitle}</span> : null}

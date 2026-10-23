@@ -151,7 +151,11 @@
     "inProgress": "En progreso",
     "notes": "Notas",
     "notesPlaceholder": "Añade detalles, enlaces o lo que necesites…",
-    "hasNotes": "Tiene notas"
+    "hasNotes": "Tiene notas",
+    "reminder": "Recordatorio",
+    "removeReminder": "Quitar recordatorio",
+    "reminderHint": "Te avisará ese día a esa hora, si la tarea sigue sin hacer.",
+    "reminderAt": "Recordatorio a las {{time}}"
   },
   "habits": {
     "new": "Nuevo hábito",
@@ -213,7 +217,13 @@
       "marbles_other": "{{count}} canicas",
       "jarMarbleValue": "Cada canica vale",
       "jarMarbleHint": "Si lo dejas vacío, una canica vale tu meta diaria.",
-      "jarCapacityHint": "Las capacidades sugeridas se ajustan solas en cada periodo (p. ej. de 28 a 31 en los meses)."
+      "jarCapacityHint": "Las capacidades sugeridas se ajustan solas en cada periodo (p. ej. de 28 a 31 en los meses).",
+      "reminders": "Recordatorios",
+      "addReminder": "Añadir hora",
+      "removeReminder": "Quitar recordatorio",
+      "remindersHint": "Llegan solo los días en que toca el hábito y si aún no lo has cumplido.",
+      "remindersHintNegative": "Si ese día aún no has recaído, te llegará un mensaje de ánimo.",
+      "remindersOff": "Activa las notificaciones en Ajustes para recibirlos en este dispositivo."
     },
     "types": {
       "boolean": "Sí/no",
@@ -304,7 +314,21 @@
       "light": "Claro",
       "dark": "Oscuro"
     },
-    "appearanceHint": "«Automático» sigue el modo claro u oscuro del iPhone. Se guarda en este dispositivo."
+    "appearanceHint": "«Automático» sigue el modo claro u oscuro del iPhone. Se guarda en este dispositivo.",
+    "notifications": "Notificaciones",
+    "notificationsToggle": "Recordatorios en este dispositivo",
+    "notificationsHint": "Las horas se configuran en cada hábito (Mis hábitos) y en cada tarea.",
+    "notificationsNeedsInstall": "Para recibir notificaciones, instala la app en la pantalla de inicio y ábrela desde su icono (iOS 16.4 o superior).",
+    "notificationsUnsupported": "Este navegador no admite notificaciones push.",
+    "notificationsDenied": "Has bloqueado las notificaciones. Actívalas en Ajustes del iPhone → Notificaciones → Habit tracker y vuelve aquí.",
+    "notificationsNotConfigured": "Faltan las claves VAPID en la configuración de la app (README, fase 4).",
+    "notificationsFailed": "No se han podido activar las notificaciones.",
+    "sendTest": "Enviar notificación de prueba",
+    "sendingTest": "Enviando…",
+    "testSent_one": "Enviada a {{count}} dispositivo",
+    "testSent_other": "Enviada a {{count}} dispositivos",
+    "testNone": "No se ha podido entregar a ningún dispositivo.",
+    "testFailed": "No se ha podido enviar la prueba. ¿Está desplegada la función send-reminders?"
   },
   "update": {
     "available": "Hay una versión nueva.",

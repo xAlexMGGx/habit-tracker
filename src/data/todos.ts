@@ -117,7 +117,9 @@ export function makeTodo(title: string, dueDate: DateStr, priority: TodoPriority
   }
 }
 
-export type TodoPatch = Partial<Pick<Todo, 'title' | 'due_date' | 'completed_at' | 'priority' | 'started_at' | 'notes'>>
+export type TodoPatch = Partial<
+  Pick<Todo, 'title' | 'due_date' | 'completed_at' | 'priority' | 'started_at' | 'notes' | 'reminder_time'>
+>
 
 export function useUpdateTodo() {
   const qc = useQueryClient()

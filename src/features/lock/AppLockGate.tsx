@@ -2,6 +2,7 @@ import { ScanFace } from 'lucide-react'
 import { type FormEvent, type ReactNode, useCallback, useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useUser } from '../../auth/AuthProvider'
+import { signOutAndForgetDevice } from '../../lib/push'
 import { supabase } from '../../lib/supabase'
 import ui from '../../styles/ui.module.css'
 import s from './Lock.module.css'
@@ -70,7 +71,7 @@ function LockScreen({ onUnlock }: { onUnlock: () => void }) {
             {t('lock.usePassword')}
           </button>
         ) : null}
-        <button type="button" className={ui.btnPlain} onClick={() => void supabase.auth.signOut()}>
+        <button type="button" className={ui.btnPlain} onClick={() => void signOutAndForgetDevice(user.id)}>
           {t('lock.signOut')}
         </button>
       </div>

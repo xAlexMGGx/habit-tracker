@@ -77,6 +77,28 @@ Complementa a [SPEC.md](../SPEC.md). Cada punto se acordó con el usuario o es u
   - Se guarda **en el dispositivo** (`localStorage`), no en la cuenta, para aplicarlo antes de pintar la pantalla y evitar un destello del otro tema.
   - Pendiente de comprobar en el iPhone: el color de la barra de estado de iOS al forzar un tema distinto al del sistema.
 
+## Notificaciones (fase 4)
+
+- **Arquitectura:**
+  - `pg_cron` llama cada minuto a la Edge Function `send-reminders`, autenticada con `CRON_SECRET` guardado en el Vault.
+  - La función calcula la hora local de cada usuario (`user_settings.timezone`) y envía con Web Push (VAPID, `npm:web-push`).
+  - La lógica que decide si un hábito "toca hoy" está en `supabase/functions/_shared/` y la usan **la app y la función**: es exactamente la misma regla, incluida la de X veces por semana con días que se mueven.
+- **Ventana:** un recordatorio se envía durante los 10 minutos siguientes a su hora, una sola vez.
+  - La tabla `sent_reminders` lo reclama antes de enviarlo, así que no hay duplicados aunque el cron se solape.
+  - Si el cron está caído más de 10 minutos, ese aviso se pierde.
+- **Hábitos:** solo los días en que tocan y si aún no están cumplidos.
+  - En los cuantitativos, el aviso dice cuánto llevas.
+  - En los **negativos**, a la hora elegida llega un **mensaje de ánimo** ("Hoy vas limpio…"), y solo si ese día no hay recaídas.
+  - Cada hábito puede tener ninguna, una o varias horas (hasta 10), cada una con la suya, sin relación con la meta diaria: p. ej. "Lavarme los dientes" 3 veces al día con avisos a las 08:00, 14:00 y 22:00, y "Beber agua" sin ninguno.
+- **Tareas:** una hora opcional, solo el día de la tarea y si sigue sin hacer. El recordatorio se mueve con la tarea y no se repite en los días siguientes si queda pendiente. El aviso lleva el color de la prioridad (🔴🟠🟢).
+- **Por dispositivo:**
+  - Cada iPhone se suscribe por separado desde Ajustes.
+  - Al **cerrar sesión** se da de baja ese dispositivo, para que la siguiente cuenta no reciba avisos ajenos.
+  - Las suscripciones que el servicio de push da por caducadas (404/410) se borran solas.
+- **Prueba:** "Enviar notificación de prueba" llama a la misma función con la sesión del usuario.
+- **Al tocar una notificación** se abre la Agenda (la de prueba abre Ajustes).
+- **Textos de las notificaciones:** en `supabase/functions/_shared/messages.ts` (ES/EN), en el idioma de la cuenta.
+
 ## Seguimiento (fase 2)
 
 - **Tarjetas:** una por hábito activo, incluidos los que hoy no tocan, que muestran "Hoy no toca".

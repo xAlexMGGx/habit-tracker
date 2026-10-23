@@ -16,4 +16,42 @@ self.addEventListener('message', (event) => {
 
 clientsClaim()
 
-// Phase 4 adds the `push` and `notificationclick` handlers here.
+// --- Web Push (phase 4) ------------------------------------------------------
+// Payload sent by supabase/functions/send-reminders: { title, body, tag, url }.
+type PushPayload = { title?: string; body?: string; tag?: string; url?: string }
+
+self.addEventListener('push', (event) => {
+  let data: PushPayload = {}
+  try {
+    data = event.data?.json() ?? {}
+  } catch {
+    data = { body: event.data?.text() }
+  }
+  // iOS requires every push to show a notification.
+  event.waitUntil(
+    self.registration.showNotification(data.title ?? 'Habit tracker', {
+      body: data.body,
+      tag: data.tag,
+      icon: 'pwa-192x192.png',
+      badge: 'pwa-64x64.png',
+      data: { url: data.url ?? '#/agenda' },
+    }),
+  )
+})
+
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close()
+  const url = new URL((event.notification.data as PushPayload | undefined)?.url ?? '#/agenda', self.registration.scope).href
+  event.waitUntil(
+    (async () => {
+      const windows = await self.clients.matchAll({ type: 'window', includeUncontrolled: true })
+      const open = windows[0]
+      if (open) {
+        await open.focus()
+        await open.navigate(url).catch(() => undefined)
+        return
+      }
+      await self.clients.openWindow(url)
+    })(),
+  )
+})

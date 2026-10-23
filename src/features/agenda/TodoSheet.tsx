@@ -1,6 +1,7 @@
-import { CalendarDays, Sun, Sunrise, Timer, Trash2 } from 'lucide-react'
+import { Bell, CalendarDays, Sun, Sunrise, Timer, Trash2, X } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { useUser } from '../../auth/AuthProvider'
 import { BottomSheet } from '../../components/BottomSheet'
 import { CalendarPicker } from '../../components/CalendarPicker'
 import { useConfirm } from '../../components/ConfirmProvider'
@@ -12,6 +13,7 @@ import { useDateLocale } from '../../i18n'
 import type { Todo } from '../../lib/database.types'
 import { addDays } from '../../lib/dates'
 import { capitalize, relativeDay } from '../../lib/format'
+import { usePush } from '../../lib/push'
 import { showToast } from '../../lib/toast'
 import ui from '../../styles/ui.module.css'
 import s from './Agenda.module.css'
@@ -38,7 +40,10 @@ export function TodoSheet({ todo: openTodo, onClose }: Props) {
   const [current, setCurrent] = useState<Todo | null>(openTodo)
   const [title, setTitle] = useState('')
   const [notes, setNotes] = useState('')
+  const [reminder, setReminder] = useState('')
   const [picking, setPicking] = useState(false)
+  const user = useUser()
+  const push = usePush(user.id)
   const last = useRef<Todo | null>(null)
   if (current) last.current = current
   const todo = current ?? last.current
@@ -48,6 +53,7 @@ export function TodoSheet({ todo: openTodo, onClose }: Props) {
     if (openTodo) {
       setTitle(openTodo.title)
       setNotes(openTodo.notes ?? '')
+      setReminder(openTodo.reminder_time?.slice(0, 5) ?? '')
     }
   }, [openTodo])
 
@@ -65,6 +71,9 @@ export function TodoSheet({ todo: openTodo, onClose }: Props) {
     if (nextTitle && nextTitle !== current.title) patch.title = nextTitle
     if (!nextTitle) setTitle(current.title)
     if (nextNotes !== (current.notes ?? null)) patch.notes = nextNotes
+    // The time picker is committed when it closes (iOS fires changes while the wheel turns).
+    const nextReminder = reminder || null
+    if (nextReminder !== (current.reminder_time?.slice(0, 5) ?? null)) patch.reminder_time = nextReminder
     if (Object.keys(patch).length) apply(patch)
   }
 
@@ -130,6 +139,42 @@ export function TodoSheet({ todo: openTodo, onClose }: Props) {
                 />
               </div>
             </div>
+          </div>
+
+          <div className={ui.section}>
+            <div className={ui.group}>
+              <label className={ui.row}>
+                <Bell size={20} className={reminder ? s.startedIcon : ui.muted} />
+                <span className={ui.rowLabel}>{t('agenda.reminder')}</span>
+                <input
+                  type="time"
+                  className={`${ui.rowInput} ${s.reminderInput}`}
+                  value={reminder}
+                  aria-label={t('agenda.reminder')}
+                  onChange={(e) => setReminder(e.target.value)}
+                  onBlur={saveText}
+                />
+                {reminder ? (
+                  <button
+                    type="button"
+                    className={ui.iconBtn}
+                    aria-label={t('agenda.removeReminder')}
+                    onClick={(e) => {
+                      e.preventDefault()
+                      setReminder('')
+                      apply({ reminder_time: null })
+                    }}
+                  >
+                    <X size={18} />
+                  </button>
+                ) : null}
+              </label>
+            </div>
+            <p className={ui.sectionFooter}>
+              {reminder && push.status !== 'on' && push.status !== 'loading'
+                ? t('habits.fields.remindersOff')
+                : t('agenda.reminderHint')}
+            </p>
           </div>
 
           <div className={ui.section}>

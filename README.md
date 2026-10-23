@@ -45,6 +45,7 @@ Cuando haya migraciones nuevas en fases posteriores, ejecuta solo los ficheros n
 |---|---|
 | `20261020000000_init.sql` | Tablas, RLS y funciones base (fase 1) |
 | `20261022000000_todo_details.sql` | Prioridad (semáforo), "en progreso" y notas en las tareas |
+| `20261023000000_push.sql` | Suscripciones push y registro de recordatorios enviados (fase 4, ver paso 9) |
 
 ### Opción B — Supabase CLI
 
@@ -202,11 +203,99 @@ El plan gratuito de Supabase **no hace copias automáticas**. De vez en cuando: 
 
 ---
 
+## 9. Notificaciones push (fase 4)
+
+Los recordatorios los envía una **Edge Function** de Supabase (`send-reminders`), que `pg_cron` llama **cada minuto**: mira la hora local de cada usuario y envía los avisos que tocan. Funciona en el iPhone con **iOS 16.4 o superior** y la app **instalada en la pantalla de inicio**.
+
+Hazlo en este orden (desde la carpeta del proyecto, en una terminal):
+
+### 9.1 Migración
+
+En el **SQL Editor**, ejecuta [supabase/migrations/20261023000000_push.sql](supabase/migrations/20261023000000_push.sql).
+
+### 9.2 Claves VAPID
+
+```bash
+npx web-push@3.6.7 generate-vapid-keys
+```
+
+Te da una **Public Key** y una **Private Key**. Guarda las dos en tu gestor de contraseñas.
+
+- La **pública** va en la app: añádela a `.env.local` como `VITE_VAPID_PUBLIC_KEY=…` y en GitHub (**Settings → Secrets and variables → Actions → Variables**) como variable `VITE_VAPID_PUBLIC_KEY`.
+- La **privada** solo va en los secretos de Supabase (paso 9.4). **Nunca** en el repositorio, en `.env.local` ni en las Variables de GitHub.
+
+### 9.3 Conectar la CLI de Supabase con tu proyecto
+
+```bash
+npx supabase login
+npx supabase link --project-ref TU-REF
+```
+
+`TU-REF` es lo que va antes de `.supabase.co` en la URL del proyecto.
+
+### 9.4 Secretos de la función
+
+Genera un secreto para que solo el cron pueda lanzar los envíos:
+
+```bash
+node -e "console.log(crypto.randomUUID())"
+```
+
+Y guárdalo junto con las claves VAPID (sustituye los valores; el `mailto:` es un email de contacto para los servicios de push):
+
+```bash
+npx supabase secrets set VAPID_PUBLIC_KEY=TU-CLAVE-PUBLICA VAPID_PRIVATE_KEY=TU-CLAVE-PRIVADA VAPID_SUBJECT=mailto:tu@email.com CRON_SECRET=EL-SECRETO-GENERADO
+```
+
+`SUPABASE_URL` y `SUPABASE_SERVICE_ROLE_KEY` los pone Supabase automáticamente en la función. La clave `service_role` solo se usa ahí, en el servidor; nunca en la app.
+
+### 9.5 Desplegar la función
+
+```bash
+npx supabase functions deploy send-reminders --no-verify-jwt --use-api
+```
+
+- `--no-verify-jwt`: la función comprueba ella misma quién la llama (el cron con `CRON_SECRET`; la prueba desde la app con tu sesión).
+- `--use-api`: empaqueta en los servidores de Supabase, así que no necesitas Docker.
+
+### 9.6 Programar el envío cada minuto
+
+Copia el contenido de [supabase/sql/schedule-reminders.sql](supabase/sql/schedule-reminders.sql) en el SQL Editor, sustituye **allí** `YOUR-PROJECT-REF` y `YOUR-CRON-SECRET` (el mismo `CRON_SECRET` del paso 9.4) y ejecútalo **una vez**. Activa `pg_cron` y `pg_net` y guarda la URL y el secreto en el **Vault** (cifrados).
+
+> ⚠️ **No guardes el secreto en el fichero del repositorio**: el repo es público. Si quieres una copia rellena, llámala `schedule-reminders.local.sql` (está en `.gitignore`).
+
+**Cambiar el `CRON_SECRET`** (por ejemplo, si se ha publicado por error): genera uno nuevo y actualízalo en los dos sitios:
+
+```bash
+npx supabase secrets set CRON_SECRET=EL-NUEVO
+```
+
+```sql
+select vault.update_secret((select id from vault.secrets where name = 'cron_secret'), 'EL-NUEVO');
+```
+
+> Coste: una llamada por minuto son unas 44.000 al mes; el plan gratuito incluye 500.000 invocaciones de Edge Functions.
+
+### 9.7 Desplegar la app y probar
+
+1. Con `VITE_VAPID_PUBLIC_KEY` en las Variables de GitHub, haz push (o relanza el workflow) para desplegar la app.
+2. En el iPhone, abre la app **desde el icono** → **Ajustes → Notificaciones** → activa **Recordatorios en este dispositivo** → **Permitir**.
+3. Pulsa **Enviar notificación de prueba**: debe llegar en unos segundos.
+4. Pon un recordatorio a un hábito para dentro de 2 minutos (Mis hábitos → el hábito → Recordatorios) y espera.
+
+Las notificaciones son **por dispositivo**: actívalas en cada iPhone. Al cerrar sesión se desactivan en ese dispositivo.
+
+---
+
 ## Estructura del proyecto
 
 ```
 .github/workflows/deploy.yml   Build + despliegue en GitHub Pages
 supabase/migrations/           Esquema SQL, RLS y funciones
+supabase/functions/
+  send-reminders/              Edge Function que envía las notificaciones
+  _shared/                     Lógica común con la app (fechas, frecuencias, qué recordar)
+supabase/sql/                  SQL que se ejecuta a mano una vez (cron de recordatorios)
 public/                        Iconos de la app (generados desde icon.svg)
 src/
   i18n/locales/{es,en}.json    Todos los textos de la interfaz
@@ -244,3 +333,14 @@ src/
   Después, esa persona puede poner la suya en *Ajustes → Cambiar contraseña*.
 - **"Email o contraseña incorrectos"** con una cuenta recién creada → comprueba que marcaste *Auto Confirm User*.
 - **Los cambios no aparecen en el iPhone** → espera el aviso de versión nueva o cierra la app del todo y ábrela otra vez.
+- **Notificaciones: el interruptor está desactivado y pide instalar la app** → ábrela desde el icono de la pantalla de inicio, no desde Safari, con iOS 16.4 o superior.
+- **"No se ha podido enviar la prueba"** → la función no está desplegada o falta un secreto. Mira **Edge Functions → send-reminders → Logs** (un error `Missing secret …` dice cuál falta).
+- **Llega la prueba pero no los recordatorios** → revisa el cron en el SQL Editor:
+
+  ```sql
+  select status, return_message, start_time from cron.job_run_details order by start_time desc limit 10;
+  select status_code, content::text from net._http_response order by created desc limit 10;
+  ```
+
+  Un `401` significa que el `CRON_SECRET` del Vault no coincide con el de la función. Comprueba también la zona horaria: se toma del iPhone cada vez que abres la app.
+- **Cambias las claves VAPID** → en cada dispositivo, desactiva y vuelve a activar las notificaciones.

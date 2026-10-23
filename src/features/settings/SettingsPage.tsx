@@ -1,4 +1,5 @@
-import { ChevronLeft, ChevronRight, Download, KeyRound, LogOut, Smartphone } from 'lucide-react'
+import { useQueryClient } from '@tanstack/react-query'
+import { Bell, ChevronLeft, ChevronRight, Download, KeyRound, LogOut, Send, Smartphone } from 'lucide-react'
 import { type FormEvent, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useLocation, useNavigate } from 'react-router'
@@ -12,6 +13,7 @@ import { applyLanguage, currentLanguage } from '../../i18n'
 import type { Language } from '../../lib/database.types'
 import { buildCsvFiles, buildJsonFile, deliverFiles, fetchExportData } from '../../lib/export'
 import { isStandalone } from '../../lib/platform'
+import { sendTestPush, signOutAndForgetDevice, usePush } from '../../lib/push'
 import { supabase } from '../../lib/supabase'
 import { type ThemePref, setThemePref, useThemePref } from '../../lib/theme'
 import { showToast } from '../../lib/toast'
@@ -74,6 +76,77 @@ function ChangePasswordSheet({ open, onClose }: { open: boolean; onClose: () => 
         </button>
       </form>
     </BottomSheet>
+  )
+}
+
+function NotificationsSection() {
+  const { t } = useTranslation()
+  const user = useUser()
+  const qc = useQueryClient()
+  const { status, turnOn, turnOff } = usePush(user.id)
+  const [busy, setBusy] = useState(false)
+  const [testing, setTesting] = useState(false)
+  const available = status === 'on' || status === 'off'
+
+  const toggle = async (on: boolean) => {
+    setBusy(true)
+    try {
+      if (on) await turnOn()
+      else await turnOff()
+      void qc.invalidateQueries({ queryKey: ['settings'] })
+    } catch {
+      showToast({ message: t('settings.notificationsFailed'), tone: 'error' })
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  const test = async () => {
+    setTesting(true)
+    try {
+      const { sent } = await sendTestPush()
+      showToast(sent ? { message: t('settings.testSent', { count: sent }) } : { message: t('settings.testNone'), tone: 'error' })
+    } catch {
+      showToast({ message: t('settings.testFailed'), tone: 'error' })
+    } finally {
+      setTesting(false)
+    }
+  }
+
+  const footer =
+    status === 'needs-install'
+      ? t('settings.notificationsNeedsInstall')
+      : status === 'unsupported'
+        ? t('settings.notificationsUnsupported')
+        : status === 'denied'
+          ? t('settings.notificationsDenied')
+          : status === 'not-configured'
+            ? t('settings.notificationsNotConfigured')
+            : t('settings.notificationsHint')
+
+  return (
+    <div className={ui.section}>
+      <h2 className={ui.sectionTitle}>{t('settings.notifications')}</h2>
+      <div className={ui.group}>
+        <div className={ui.row}>
+          <Bell size={20} className={status === 'on' ? s.rowIcon : ui.muted} />
+          <span className={ui.rowLabel}>{t('settings.notificationsToggle')}</span>
+          <Switch
+            checked={status === 'on'}
+            disabled={!available || busy}
+            onChange={toggle}
+            label={t('settings.notificationsToggle')}
+          />
+        </div>
+        {status === 'on' ? (
+          <button type="button" className={ui.rowButton} disabled={testing} onClick={test}>
+            <Send size={20} className={s.rowIcon} />
+            <span className={ui.rowLabel}>{testing ? t('settings.sendingTest') : t('settings.sendTest')}</span>
+          </button>
+        ) : null}
+      </div>
+      <p className={ui.sectionFooter}>{footer}</p>
+    </div>
   )
 }
 
@@ -192,7 +265,7 @@ export function SettingsPage() {
 
   const signOut = async () => {
     if (await confirm({ title: t('settings.signOutConfirm'), confirmLabel: t('settings.signOut'), destructive: true }))
-      await supabase.auth.signOut()
+      await signOutAndForgetDevice(user.id)
   }
 
   return (
@@ -230,6 +303,8 @@ export function SettingsPage() {
           </button>
         </div>
       </div>
+
+      <NotificationsSection />
 
       <FaceIdRow />
 

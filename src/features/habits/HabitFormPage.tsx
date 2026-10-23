@@ -1,16 +1,18 @@
-import { Archive, CircleHelp } from 'lucide-react'
+import { Archive, Bell, CircleHelp, Plus, X } from 'lucide-react'
 import { type FormEvent, type ReactNode, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useLocation, useNavigate, useParams } from 'react-router'
 import { useConfirm } from '../../components/ConfirmProvider'
 import { PageHeader } from '../../components/PageHeader'
 import { ColorPicker, EmojiPicker, HabitIcon, Segmented, Spinner, Stepper, WeekdayPicker } from '../../components/controls'
+import { useUser } from '../../auth/AuthProvider'
 import { useCreateHabit, useHabits, useSetArchived, useUpdateHabit } from '../../data/habits'
 import { useToday } from '../../hooks/useToday'
 import type { FrequencyType, Habit, HabitType, VizType } from '../../lib/database.types'
 import { DEFAULT_VIZ, HABIT_TYPES, frequenciesFor } from '../../lib/habitMeta'
 import { type JarPeriod, periodEnd, periodStart, suggestedCapacity } from '../../lib/jar'
 import { newId } from '../../lib/platform'
+import { usePush } from '../../lib/push'
 import { sampleHabit, sampleLogs } from '../../lib/sampleData'
 import { showToast } from '../../lib/toast'
 import {
@@ -40,6 +42,8 @@ type FormState = {
   planned: number[]
   interval: number
   startDate: string
+  /** Reminder times, 'HH:MM' */
+  reminders: string[]
   viz: VizType
   /** Ring, bars and jar period. Jar capacity and marble value are edited as text below. */
   vizConfig: VizConfig
@@ -53,6 +57,10 @@ type Errors = Partial<
 >
 
 const toNumber = (text: string) => Number(text.trim().replace(',', '.'))
+
+const MAX_REMINDERS = 10
+/** Times offered when adding a reminder (the first one not already used). */
+const DEFAULT_TIMES = ['09:00', '14:00', '21:00', '07:00', '11:00', '17:00', '19:00', '23:00', '10:00', '16:00']
 
 function jarFields(config: VizConfig): Pick<FormState, 'capacityMode' | 'customCapacity' | 'marbleValue'> {
   return {
@@ -90,6 +98,7 @@ function initialState(habit: Habit | null, today: string): FormState {
       planned: [1, 3, 5],
       interval: 2,
       startDate: today,
+      reminders: [],
       viz: DEFAULT_VIZ.boolean,
       vizConfig,
       ...jarFields(vizConfig),
@@ -110,6 +119,7 @@ function initialState(habit: Habit | null, today: string): FormState {
     planned: habit.frequency_type === 'times_per_week' ? (habit.frequency_days ?? []) : [1, 3, 5],
     interval: habit.frequency_interval ?? 2,
     startDate: habit.start_date,
+    reminders: habit.reminder_times.map((t) => t.slice(0, 5)),
     viz: habit.viz_type,
     vizConfig,
     ...jarFields(vizConfig),
@@ -132,6 +142,8 @@ function HabitForm({ habit }: { habit: Habit | null }) {
   const location = useLocation()
   const today = useToday()
   const confirm = useConfirm()
+  const user = useUser()
+  const push = usePush(user.id)
   const habits = useHabits().data ?? []
   const create = useCreateHabit()
   const update = useUpdateHabit()
@@ -238,6 +250,7 @@ function HabitForm({ habit }: { habit: Habit | null }) {
       frequency_times: form.frequency === 'times_per_week' ? form.times : null,
       frequency_interval: form.frequency === 'every_n_days' ? form.interval : null,
       start_date: form.startDate,
+      reminder_times: [...new Set(form.reminders.filter(Boolean))].sort(),
       viz_type: form.viz,
       viz_config: writeVizConfig(habit?.viz_config, vizConfig),
     }
@@ -424,6 +437,47 @@ function HabitForm({ habit }: { habit: Habit | null }) {
 
         {errors.days ? <p className={ui.error}>{errors.days}</p> : null}
         {errors.interval ? <p className={ui.error}>{errors.interval}</p> : null}
+      </Section>
+
+      <Section
+        title={t('habits.fields.reminders')}
+        footer={[
+          form.type === 'negative' ? t('habits.fields.remindersHintNegative') : t('habits.fields.remindersHint'),
+          form.reminders.length && push.status !== 'on' && push.status !== 'loading' ? t('habits.fields.remindersOff') : '',
+        ].join(' ')}
+      >
+        <div className={ui.group}>
+          {form.reminders.map((time, i) => (
+            <div key={i} className={ui.row}>
+              <Bell size={18} className={ui.muted} />
+              <input
+                type="time"
+                className={`${ui.rowInput} ${ui.left} ${s.timeInput}`}
+                value={time}
+                aria-label={t('habits.fields.reminders')}
+                onChange={(e) => set('reminders', form.reminders.map((x, j) => (j === i ? e.target.value : x)))}
+              />
+              <button
+                type="button"
+                className={`${ui.iconBtn} ${ui.danger}`}
+                aria-label={t('habits.fields.removeReminder')}
+                onClick={() => set('reminders', form.reminders.filter((_, j) => j !== i))}
+              >
+                <X size={18} />
+              </button>
+            </div>
+          ))}
+          {form.reminders.length < MAX_REMINDERS ? (
+            <button
+              type="button"
+              className={ui.rowButton}
+              onClick={() => set('reminders', [...form.reminders, DEFAULT_TIMES.find((d) => !form.reminders.includes(d)) ?? '09:00'])}
+            >
+              <Plus size={18} className={s.addIcon} />
+              <span className={`${ui.rowLabel} ${s.addLabel}`}>{t('habits.fields.addReminder')}</span>
+            </button>
+          ) : null}
+        </div>
       </Section>
 
       <Section footer={t('habits.fields.startDateHint')}>

@@ -9,3 +9,5 @@ dev-dist
 *.log
 supabase/.temp
 supabase/.branches
+# Filled-in copies of supabase/sql/*.sql with real secrets
+*.local.sql

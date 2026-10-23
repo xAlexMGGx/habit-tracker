@@ -151,7 +151,11 @@
     "inProgress": "In progress",
     "notes": "Notes",
     "notesPlaceholder": "Add details, links, anything you need…",
-    "hasNotes": "Has notes"
+    "hasNotes": "Has notes",
+    "reminder": "Reminder",
+    "removeReminder": "Remove reminder",
+    "reminderHint": "You’ll get a reminder that day at that time if it’s still not done.",
+    "reminderAt": "Reminder at {{time}}"
   },
   "habits": {
     "new": "New habit",
@@ -213,7 +217,13 @@
       "marbles_other": "{{count}} marbles",
       "jarMarbleValue": "Each marble is worth",
       "jarMarbleHint": "Leave it empty and one marble is your daily goal.",
-      "jarCapacityHint": "Suggested capacities adjust by themselves each period (e.g. 28 to 31 for months)."
+      "jarCapacityHint": "Suggested capacities adjust by themselves each period (e.g. 28 to 31 for months).",
+      "reminders": "Reminders",
+      "addReminder": "Add time",
+      "removeReminder": "Remove reminder",
+      "remindersHint": "Only on days the habit is due and if you haven’t done it yet.",
+      "remindersHintNegative": "If you haven’t relapsed that day, you’ll get some encouragement.",
+      "remindersOff": "Turn on notifications in Settings to get them on this device."
     },
     "types": {
       "boolean": "Yes/no",
@@ -304,7 +314,21 @@
       "light": "Light",
       "dark": "Dark"
     },
-    "appearanceHint": "“Automatic” follows your iPhone’s light or dark mode. Saved on this device."
+    "appearanceHint": "“Automatic” follows your iPhone’s light or dark mode. Saved on this device.",
+    "notifications": "Notifications",
+    "notificationsToggle": "Reminders on this device",
+    "notificationsHint": "Times are set on each habit (Habits) and on each TO-DO.",
+    "notificationsNeedsInstall": "To get notifications, add the app to your Home Screen and open it from its icon (iOS 16.4 or later).",
+    "notificationsUnsupported": "This browser doesn’t support push notifications.",
+    "notificationsDenied": "You blocked notifications. Turn them on in iPhone Settings → Notifications → Habit tracker and come back.",
+    "notificationsNotConfigured": "The app is missing its VAPID keys (README, phase 4).",
+    "notificationsFailed": "Couldn’t turn on notifications.",
+    "sendTest": "Send a test notification",
+    "sendingTest": "Sending…",
+    "testSent_one": "Sent to {{count}} device",
+    "testSent_other": "Sent to {{count}} devices",
+    "testNone": "It couldn’t be delivered to any device.",
+    "testFailed": "Couldn’t send the test. Is the send-reminders function deployed?"
   },
   "update": {
     "available": "A new version is available.",
