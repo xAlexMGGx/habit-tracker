@@ -204,6 +204,7 @@
       "barsRange": "Days shown",
       "jarPeriod": "The jar renews every",
       "jarPeriods": {
+        "day": "Day",
         "week": "Week",
         "month": "Month",
         "quarter": "Quarter",
@@ -218,10 +219,12 @@
       "jarMarbleValue": "Each marble is worth",
       "jarMarbleHint": "Leave it empty and one marble is your daily goal.",
       "jarCapacityHint": "Suggested capacities adjust by themselves each period (e.g. 28 to 31 for months).",
+      "jarDayHint": "A new jar starts every day and fills up with the daily goal: if you don’t choose what a marble is worth, the goal is split into 10. The shelf shows the 12 previous days.",
       "reminders": "Reminders",
       "addReminder": "Add time",
       "removeReminder": "Remove reminder",
       "remindersHint": "Only on days the habit is due and if you haven’t done it yet.",
+      "reminderDaysHint": "Under each time, choose the days it rings on.",
       "remindersHintNegative": "If you haven’t relapsed that day, you’ll get some encouragement.",
       "remindersOff": "Turn on notifications in Settings to get them on this device."
     },
@@ -266,7 +269,8 @@
       "selectExactly_other": "Pick exactly {{count}} days.",
       "intervalRange": "Between 2 and 365 days.",
       "startDateRequired": "Set a start date.",
-      "capacityRequired": "Set a capacity of at least 1 marble."
+      "capacityRequired": "Set a capacity of at least 1 marble.",
+      "reminderDays": "Choose at least one day for each reminder."
     }
   },
   "colors": {
@@ -370,6 +374,7 @@
     "nextMonth": "Next month",
     "thisWeek": "This week",
     "thisMonth": "This month",
+    "day": "Day",
     "week": "Week",
     "month": "Month",
     "doneOf": "{{done}} of {{total}}",
@@ -435,7 +440,7 @@
     },
     "ring": {
       "example": "Read",
-      "read": "The ring fills with the days done out of every day due this week (Monday to Sunday) or this month, as you choose: a 4-times-a-week habit only reaches 100% with the fourth. Below it you see how many you’ve done.",
+      "read": "The ring fills with the days done out of every day due this week (Monday to Sunday) or this month, as you choose: a 4-times-a-week habit only reaches 100% with the fourth. Quantitative habits can also use “Day”: how much of today’s goal you’ve done. Below it you see how many you’ve done.",
       "purpose": "A short, clear goal: close the ring this week.",
       "ideal": "Any habit, especially non-daily ones: reading on weekdays, calling family."
     },
@@ -453,7 +458,7 @@
     },
     "marble_jar": {
       "example": "Go to the gym",
-      "read": "Every time you complete it, a marble drops into the jar; for quantitative habits, one per amount you choose (e.g. 1 marble = 1 km), adding up across days. Missing never removes marbles. If you fill it early, you’ll see the extra marbles. When the period ends (week, month, quarter or year) the jar goes to the shelf, which shows the last 12.",
+      "read": "Every time you complete it, a marble drops into the jar; for quantitative habits, one per amount you choose (e.g. 1 marble = 1 km), adding up across days. Missing never removes marbles. If you fill it early, you’ll see the extra marbles. When the period ends (week, month, quarter or year; for quantitative habits, also day) the jar goes to the shelf, which shows the last 12.",
       "purpose": "Watch what you’ve built up grow without fear of losing it: one bad day doesn’t spoil the jar.",
       "ideal": "Yes/no or quantitative habits that don’t need to be daily: gym, kilometers run, books read."
     },

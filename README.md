@@ -47,6 +47,7 @@ Cuando haya migraciones nuevas en fases posteriores, ejecuta solo los ficheros n
 | `20261022000000_todo_details.sql` | Prioridad (semáforo), "en progreso" y notas en las tareas |
 | `20261023000000_push.sql` | Suscripciones push y registro de recordatorios enviados (fase 4, ver paso 9) |
 | `20261024000000_health.sql` | Claves personales y hábitos rellenados desde Salud (fase 6, ver paso 10) |
+| `20261024120000_reminder_days_todo_order.sql` | Recordatorios según el día de la semana y orden manual de las tareas (ver paso 11) |
 
 ### Opción B — Supabase CLI
 
@@ -355,6 +356,25 @@ En **Atajos → Automatización → + → Hora del día**, con **Diariamente** y
 - **Las demás, en silencio** (p. ej. 9:00, 12:00, 15:00, 18:00 y 21:00): tras **Siguiente**, elige directamente el atajo `Habit tracker`.
 
 iOS no deja leer Salud con el iPhone bloqueado, así que alguna ejecución puede fallar. Como el atajo envía siempre los últimos días, la siguiente lo completa.
+
+---
+
+## 11. Cambios tras la fase 6
+
+- **Recordatorios según el día:** cada hora de recordatorio de un hábito lleva debajo los días de la semana en que suena (p. ej. 19:00 de lunes a viernes y 10:00 el fin de semana). Los que ya tenías suenan todos los días.
+- **Orden de las tareas:** dentro de cada prioridad, las tareas del día se reordenan con el asa ≡, como los hábitos en Mis hábitos.
+- **Anillo y tarro diarios** (hábitos cuantitativos): en el periodo eliges «Día» y ves lo que llevas de la meta de hoy.
+
+Para activarlo, haz estos tres pasos **seguidos** (la versión anterior de la app y de la función todavía usa la columna antigua de los recordatorios):
+
+1. En el **SQL Editor**, ejecuta [supabase/migrations/20261024120000_reminder_days_todo_order.sql](supabase/migrations/20261024120000_reminder_days_todo_order.sql).
+2. Vuelve a desplegar la función de los recordatorios:
+
+   ```bash
+   npx supabase functions deploy send-reminders --no-verify-jwt --use-api
+   ```
+
+3. Haz push a `main` para desplegar la app.
 
 ---
 

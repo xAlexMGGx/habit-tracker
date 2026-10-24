@@ -50,6 +50,8 @@ const SHADES = [s.m0, s.m1, s.m2, s.m3]
 export function periodLabel(start: DateStr, period: JarPeriod, t: TFunction, locale: Locale, long: boolean): string {
   const d = fromDateStr(start)
   switch (period) {
+    case 'day':
+      return long ? capitalize(format(d, t('formats.longDay'), { locale })) : format(d, t('formats.dayMonth'), { locale })
     case 'week':
       return long
         ? t('viz.jar.weekOf', { date: format(d, t('formats.dayMonth'), { locale }) })
@@ -139,7 +141,8 @@ export function MarbleJar({ habit, logs, today, size, config }: VizProps) {
   const { t, i18n } = useTranslation()
   const locale = useDateLocale()
   const jar = currentJar(habit, config, logs, today)
-  const period = periodLabel(jar.start, config.jarPeriod, t, locale, true)
+  const period =
+    config.jarPeriod === 'day' && jar.start === today ? t('common.today') : periodLabel(jar.start, config.jarPeriod, t, locale, true)
   const quantitative = habit.type === 'quantitative'
 
   return (

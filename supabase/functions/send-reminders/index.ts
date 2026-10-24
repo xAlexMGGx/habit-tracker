@@ -92,7 +92,7 @@ async function runReminders() {
       admin
         .from('habits')
         .select(
-          'id, name, icon, unit, type, target, frequency_type, frequency_days, frequency_times, frequency_interval, start_date, reminder_times, archived_at',
+          'id, name, icon, unit, type, target, frequency_type, frequency_days, frequency_times, frequency_interval, start_date, reminders, archived_at',
         )
         .eq('user_id', user.user_id)
         .is('archived_at', null),

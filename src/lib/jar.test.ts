@@ -101,3 +101,38 @@ describe('shelf', () => {
     expect(shelf[11]).toMatchObject({ start: '2026-09-01', count: 1, capacity: 30 })
   })
 })
+
+describe('daily jar (quantitative)', () => {
+  // "Pasos": 10.000 a day, on weekdays only; 1 marble = 1.000 steps
+  const steps: ScheduleHabit = { ...base, type: 'quantitative', target: 10000, frequency_type: 'weekdays', frequency_days: [1, 2, 3, 4, 5] }
+  const daily: JarConfig = { jarPeriod: 'day', jarCapacity: 37, jarMarbleValue: 1000 }
+  const stepLogs = logs({ '2026-10-23': 12500, '2026-10-24': 8432 })
+
+  it('a period is one day', () => {
+    expect(periodStart('2026-10-24', 'day')).toBe('2026-10-24')
+    expect(periodEnd('2026-10-24', 'day')).toBe('2026-10-24')
+    expect(shiftPeriod('2026-10-24', 'day', -3)).toBe('2026-10-21')
+  })
+
+  it("holds the day's goal, whatever the frequency or a saved custom capacity", () => {
+    expect(jarCapacity(steps, daily, '2026-10-24', '2026-10-24')).toBe(10) // Saturday, not due
+    expect(jarCapacity(steps, daily, '2026-10-23', '2026-10-23')).toBe(10)
+    // Without a marble value, the daily goal is split into 10 marbles
+    expect(jarCapacity(steps, { ...daily, jarMarbleValue: null }, '2026-10-23', '2026-10-23')).toBe(10)
+    expect(currentJar(steps, { ...daily, jarMarbleValue: null }, stepLogs, '2026-10-24')).toMatchObject({ count: 8, capacity: 10 })
+    // Other periods keep 1 marble = the daily goal
+    expect(jarCapacity(steps, { ...daily, jarPeriod: 'week', jarCapacity: 'all', jarMarbleValue: null }, '2026-10-19', '2026-10-25')).toBe(5)
+  })
+
+  it("only today's amount goes in", () => {
+    expect(currentJar(steps, daily, stepLogs, '2026-10-24')).toMatchObject({ count: 8, capacity: 10, extra: 0 })
+    expect(currentJar(steps, daily, stepLogs, '2026-10-23')).toMatchObject({ count: 12, capacity: 10, extra: 2 })
+  })
+
+  it('the shelf shows the previous 12 days', () => {
+    const shelf = shelfJars(steps, daily, stepLogs, '2026-10-24')
+    expect(shelf).toHaveLength(12)
+    expect(shelf.at(-1)).toMatchObject({ start: '2026-10-23', count: 12 })
+    expect(shelf[0]?.start).toBe('2026-10-12')
+  })
+})

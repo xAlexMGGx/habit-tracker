@@ -139,6 +139,23 @@ Complementa a [SPEC.md](../SPEC.md). Cada punto se acordó con el usuario o es u
   - No es en tiempo real: los datos llegan cuando se ejecuta el atajo.
   - Con el iPhone bloqueado, iOS no deja leer Salud y alguna automatización puede fallar. Por eso hay varias y se envían varios días.
 
+## Cambios tras la fase 6
+
+- **Recordatorios según el día** (elegido: cada hora con sus días):
+  - `habits.reminders` es una lista de `{hora, días}` (días ISO, 1 = lunes) y sustituye a `reminder_times`. La base de datos valida el formato: HH:MM, de 1 a 7 días distintos de 1 a 7 y como mucho 10 recordatorios.
+  - Al migrar, los recordatorios que ya había suenan todos los días.
+  - Un recordatorio nuevo empieza con todos los días marcados. No se puede guardar uno sin días.
+  - Sigue valiendo la regla de la fase 4: solo suena los días en que toca el hábito y si aún no está cumplido. Si dos recordatorios coinciden en hora el mismo día, llega uno.
+- **Orden de las tareas** (elegido: asa ≡ como en Mis hábitos):
+  - Solo dentro de su prioridad y solo las tareas del día. «Pendientes de días anteriores» sigue ordenándose sola (prioridad y antigüedad).
+  - El asa aparece cuando una prioridad tiene 2 tareas o más y el día se puede editar.
+  - `todos.sort_order`: al reordenar se guarda el orden de todo el día (1, 2, 3…). Una tarea nueva, movida a otro día o cambiada de prioridad va al final de su bloque, porque recibe la hora actual en milisegundos.
+- **Anillo y tarro diarios** (solo hábitos cuantitativos, pedido así):
+  - **Anillo «Día»:** cantidad de hoy sobre la meta diaria. El porcentaje puede pasar de 100 % (el anillo se queda lleno). En el detalle, las opciones son «Hoy / Esta semana / Este mes».
+  - **Tarro «Día»:** un tarro por día que se llena con la meta diaria. No hay capacidad que elegir. La estantería muestra los 12 días anteriores.
+  - Si no se elige cuánto vale una canica, en el tarro diario **la meta se reparte en 10 canicas** (decisión propia: con 1 canica = la meta, el tarro estaría vacío hasta cumplirla). En los demás periodos sigue siendo 1 canica = la meta diaria.
+  - En sí/no y negativos no se ofrece «Día». Si se hubiera guardado, se muestra la opción por defecto (semana o mes).
+
 ## Seguimiento (fase 2)
 
 - **Tarjetas:** una por hábito activo, incluidos los que hoy no tocan, que muestran "Hoy no toca".

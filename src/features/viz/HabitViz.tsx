@@ -1,6 +1,6 @@
 import type { VizType } from '../../lib/database.types'
 import { habitColorStyle } from '../../lib/habitMeta'
-import { effectiveViz } from '../../lib/vizConfig'
+import { configFor, effectiveViz } from '../../lib/vizConfig'
 import { Bars } from './Bars'
 import { DaysSince } from './DaysSince'
 import { Heatmap } from './Heatmap'
@@ -11,7 +11,9 @@ import { Ring } from './Ring'
 import type { VizProps } from './types'
 
 /** Draws a habit with its chosen visualization, or with `viz` when given (detail, guide, preview). */
-export function HabitViz({ viz, ...props }: VizProps & { viz?: VizType }) {
+export function HabitViz({ viz, config, ...rest }: VizProps & { viz?: VizType }) {
+  // A daily period only applies to quantitative habits.
+  const props = { ...rest, config: configFor(rest.habit.type, config) }
   const kind = viz ?? effectiveViz(props.habit)
   const view = (() => {
     switch (kind) {

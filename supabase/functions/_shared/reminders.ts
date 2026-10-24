@@ -1,18 +1,20 @@
 // Decides which reminders are due for one user right now. Pure: the Edge Function does the I/O.
-import type { DateStr } from './dates.ts'
+import { type DateStr, isoWeekday } from './dates.ts'
 import { type Lang, PRIORITY_EMOJI, messages } from './messages.ts'
 import { type LogRow, type ScheduleHabit, buildLogIndex, isCompletedValue, isDueOn, logsFor } from './schedule.ts'
 
 /** A reminder fires during this many minutes after its time (the cron runs every minute). */
 export const REMINDER_WINDOW_MINUTES = 10
 
+/** A reminder time and the ISO weekdays (1 = Monday) it rings on. */
+export type HabitReminder = { time: string; days: number[] }
+
 export type ReminderHabit = ScheduleHabit & {
   id: string
   name: string
   icon: string
   unit: string | null
-  /** 'HH:MM' or 'HH:MM:SS' (Postgres time) */
-  reminder_times: string[]
+  reminders: HabitReminder[]
   archived_at: string | null
 }
 
@@ -79,7 +81,10 @@ export function planReminders({ habits, logs, todos, now, lang }: Input): Planne
 
   for (const habit of habits) {
     if (habit.archived_at || now.date < habit.start_date) continue
-    const times = habit.reminder_times.filter((t) => inWindow(t, now))
+    const weekday = isoWeekday(now.date)
+    const times = [
+      ...new Set(habit.reminders.filter((r) => r.days.includes(weekday) && inWindow(r.time, now)).map((r) => hhmm(r.time))),
+    ]
     if (!times.length) continue
     const habitLogs = logsFor(index, habit.id)
     if (!isDueOn(habit, now.date, habitLogs)) continue

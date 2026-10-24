@@ -427,3 +427,24 @@
   color: var(--text-2);
   font-variant-numeric: tabular-nums;
 }
+
+/* Reordering the day's to-dos (≡ handle, as in Mis hábitos) */
+.todoHandle {
+  flex: none;
+  align-self: center;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  margin: -10px -10px -10px 0;
+  color: var(--text-3);
+  touch-action: none;
+}
+
+.todoDragging {
+  z-index: 2;
+  background: var(--surface);
+  box-shadow: var(--shadow);
+  border-radius: var(--radius);
+}

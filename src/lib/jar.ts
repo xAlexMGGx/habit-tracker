@@ -2,8 +2,11 @@ import type { Habit } from './database.types'
 import { type DateStr, addDays, diffDays, weekStart } from './dates'
 import { type HabitLogMap, isPlannedOn } from './schedule'
 
-/** Renewal period of the marble jar. Natural periods, like the rest of the stats. */
-export type JarPeriod = 'week' | 'month' | 'quarter' | 'year'
+/**
+ * Renewal period of the marble jar. Natural periods, like the rest of the stats.
+ * 'day' (quantitative habits only): a jar per day, filled by that day's goal.
+ */
+export type JarPeriod = 'day' | 'week' | 'month' | 'quarter' | 'year'
 
 /** 'all' = every due day (100 %), 'most' = 80 %, or a custom number of marbles. */
 export type JarCapacity = 'all' | 'most' | number
@@ -33,7 +36,7 @@ export type Jar = {
   fraction: number
 }
 
-const MONTHS: Record<Exclude<JarPeriod, 'week'>, number> = { month: 1, quarter: 3, year: 12 }
+const MONTHS: Record<Exclude<JarPeriod, 'day' | 'week'>, number> = { month: 1, quarter: 3, year: 12 }
 
 function firstOfMonth(year: number, month: number): DateStr {
   const d = new Date(Date.UTC(year, month - 1, 1))
@@ -41,6 +44,7 @@ function firstOfMonth(year: number, month: number): DateStr {
 }
 
 export function periodStart(date: DateStr, period: JarPeriod): DateStr {
+  if (period === 'day') return date
   if (period === 'week') return weekStart(date)
   const y = Number(date.slice(0, 4))
   const m = Number(date.slice(5, 7))
@@ -51,6 +55,7 @@ export function periodStart(date: DateStr, period: JarPeriod): DateStr {
 
 /** Start of the period n periods away from the one starting at `start`. */
 export function shiftPeriod(start: DateStr, period: JarPeriod, n: number): DateStr {
+  if (period === 'day') return addDays(start, n)
   if (period === 'week') return addDays(start, 7 * n)
   return firstOfMonth(Number(start.slice(0, 4)), Number(start.slice(5, 7)) + MONTHS[period] * n)
 }
@@ -59,9 +64,15 @@ export function periodEnd(start: DateStr, period: JarPeriod): DateStr {
   return addDays(shiftPeriod(start, period, 1), -1)
 }
 
-export function marbleValue(habit: JarHabit, config: JarConfig): number {
+/** Without a chosen value, a daily jar splits the goal into this many marbles. */
+export const DAILY_JAR_MARBLES = 10
+
+export function marbleValue(habit: Pick<JarHabit, 'type' | 'target'>, config: JarConfig): number {
   if (habit.type !== 'quantitative') return 1
-  return config.jarMarbleValue && config.jarMarbleValue > 0 ? config.jarMarbleValue : (habit.target ?? 1)
+  if (config.jarMarbleValue && config.jarMarbleValue > 0) return config.jarMarbleValue
+  const goal = habit.target ?? 1
+  // One marble per whole goal would leave a daily jar empty until the goal is met.
+  return config.jarPeriod === 'day' ? goal / DAILY_JAR_MARBLES : goal
 }
 
 /** How many times the habit is expected in [start, end], counting only from its start date. */
@@ -86,11 +97,13 @@ export function expectedCompletions(habit: JarHabit, start: DateStr, end: DateSt
 /** Suggested capacity for a given option (used by the form as well). */
 export function suggestedCapacity(habit: JarHabit, config: JarConfig, start: DateStr, end: DateStr, option: 'all' | 'most') {
   const perCompletion = habit.type === 'quantitative' ? (habit.target ?? 1) / marbleValue(habit, config) : 1
-  const base = expectedCompletions(habit, start, end) * perCompletion
+  // A daily jar holds that day's goal, whatever the frequency.
+  const base = (config.jarPeriod === 'day' ? 1 : expectedCompletions(habit, start, end)) * perCompletion
   return Math.max(1, Math.round(base * (option === 'most' ? MOST_RATIO : 1)))
 }
 
 export function jarCapacity(habit: JarHabit, config: JarConfig, start: DateStr, end: DateStr): number {
+  if (config.jarPeriod === 'day') return suggestedCapacity(habit, config, start, end, 'all')
   if (typeof config.jarCapacity === 'number') return Math.max(1, Math.round(config.jarCapacity))
   return suggestedCapacity(habit, config, start, end, config.jarCapacity)
 }

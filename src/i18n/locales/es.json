@@ -204,6 +204,7 @@
       "barsRange": "Días que se ven",
       "jarPeriod": "El tarro se renueva cada",
       "jarPeriods": {
+        "day": "Día",
         "week": "Semana",
         "month": "Mes",
         "quarter": "Trimestre",
@@ -218,10 +219,12 @@
       "jarMarbleValue": "Cada canica vale",
       "jarMarbleHint": "Si lo dejas vacío, una canica vale tu meta diaria.",
       "jarCapacityHint": "Las capacidades sugeridas se ajustan solas en cada periodo (p. ej. de 28 a 31 en los meses).",
+      "jarDayHint": "Cada día empieza un tarro nuevo, que se llena con la meta diaria: si no eliges cuánto vale cada canica, la meta se reparte en 10. En la estantería ves los 12 días anteriores.",
       "reminders": "Recordatorios",
       "addReminder": "Añadir hora",
       "removeReminder": "Quitar recordatorio",
       "remindersHint": "Llegan solo los días en que toca el hábito y si aún no lo has cumplido.",
+      "reminderDaysHint": "Debajo de cada hora, elige los días en que suena.",
       "remindersHintNegative": "Si ese día aún no has recaído, te llegará un mensaje de ánimo.",
       "remindersOff": "Activa las notificaciones en Ajustes para recibirlos en este dispositivo."
     },
@@ -266,7 +269,8 @@
       "selectExactly_other": "Elige exactamente {{count}} días.",
       "intervalRange": "Entre 2 y 365 días.",
       "startDateRequired": "Indica la fecha de inicio.",
-      "capacityRequired": "Indica una capacidad de al menos 1 canica."
+      "capacityRequired": "Indica una capacidad de al menos 1 canica.",
+      "reminderDays": "Elige al menos un día para cada recordatorio."
     }
   },
   "colors": {
@@ -370,6 +374,7 @@
     "nextMonth": "Mes siguiente",
     "thisWeek": "Esta semana",
     "thisMonth": "Este mes",
+    "day": "Día",
     "week": "Semana",
     "month": "Mes",
     "doneOf": "{{done}} de {{total}}",
@@ -435,7 +440,7 @@
     },
     "ring": {
       "example": "Leer",
-      "read": "El anillo se llena con los días cumplidos sobre todos los que tocan en la semana (de lunes a domingo) o en el mes, según elijas: un hábito de 4 veces por semana no llega al 100 % hasta la cuarta. Debajo ves cuántos llevas.",
+      "read": "El anillo se llena con los días cumplidos sobre todos los que tocan en la semana (de lunes a domingo) o en el mes, según elijas: un hábito de 4 veces por semana no llega al 100 % hasta la cuarta. En los cuantitativos también puedes elegir «Día»: muestra lo que llevas hoy de la meta diaria. Debajo ves cuántos llevas.",
       "purpose": "Tener una meta corta y clara: cerrar el anillo esta semana.",
       "ideal": "Cualquier hábito, sobre todo los que no son diarios: leer entre semana, llamar a la familia."
     },
@@ -453,7 +458,7 @@
     },
     "marble_jar": {
       "example": "Ir al gimnasio",
-      "read": "Cada vez que cumples, cae una canica en el tarro; en los cuantitativos, una por cada cantidad que elijas (p. ej. 1 canica = 1 km), sumando lo de varios días. Fallar nunca quita canicas. Si lo llenas antes de tiempo, verás las canicas extra. Al acabar el periodo (semana, mes, trimestre o año) el tarro pasa a la estantería, donde ves los 12 últimos.",
+      "read": "Cada vez que cumples, cae una canica en el tarro; en los cuantitativos, una por cada cantidad que elijas (p. ej. 1 canica = 1 km), sumando lo de varios días. Fallar nunca quita canicas. Si lo llenas antes de tiempo, verás las canicas extra. Al acabar el periodo (semana, mes, trimestre o año; en los cuantitativos, también día) el tarro pasa a la estantería, donde ves los 12 últimos.",
       "purpose": "Ver crecer lo que llevas acumulado sin miedo a perderlo: un mal día no estropea el tarro.",
       "ideal": "Hábitos sí/no o cuantitativos que no tienen por qué ser diarios: gimnasio, kilómetros corridos, libros leídos."
     },

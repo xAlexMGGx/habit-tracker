@@ -12,6 +12,7 @@ const todo = (title: string, priority: TodoPriority, due_date = '2026-10-21', cr
   priority,
   started_at: null,
   notes: null,
+  sort_order: Date.parse(created_at),
   created_at,
   updated_at: created_at,
 })

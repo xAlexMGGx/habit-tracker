@@ -8,6 +8,8 @@ import {
 
 // Wednesday 21 Oct 2026, 08:03 local
 const NOW = { date: '2026-10-21', minutes: 8 * 60 + 3 }
+const EVERY_DAY = [1, 2, 3, 4, 5, 6, 7]
+const daily = (...times: string[]) => times.map((time) => ({ time, days: EVERY_DAY }))
 
 const habit = (o: Partial<ReminderHabit> = {}): ReminderHabit => ({
   id: 'h1',
@@ -21,7 +23,7 @@ const habit = (o: Partial<ReminderHabit> = {}): ReminderHabit => ({
   frequency_times: null,
   frequency_interval: null,
   start_date: '2026-10-01',
-  reminder_times: ['08:00:00'],
+  reminders: daily('08:00'),
   archived_at: null,
   ...o,
 })
@@ -90,7 +92,7 @@ describe('planReminders: habits', () => {
   })
 
   it('several times a day', () => {
-    const h = habit({ reminder_times: ['08:00', '20:00'] })
+    const h = habit({ reminders: daily('08:00', '20:00') })
     expect(plan([h]).map((r) => r.time)).toEqual(['08:00'])
     expect(plan([h], [], [], { ...NOW, minutes: 20 * 60 }).map((r) => r.time)).toEqual(['20:00'])
   })
@@ -109,10 +111,10 @@ describe('planReminders: several reminders, independent of the goal', () => {
     type: 'quantitative',
     target: 3,
     unit: 'veces',
-    reminder_times: ['08:00', '14:00', '22:00'],
+    reminders: daily('08:00', '14:00', '22:00'),
   })
   // "Beber agua": 8 glasses, no reminders at all
-  const water = habit({ id: 'h2', name: 'Beber agua', icon: '💧', type: 'quantitative', target: 8, unit: 'vasos', reminder_times: [] })
+  const water = habit({ id: 'h2', name: 'Beber agua', icon: '💧', type: 'quantitative', target: 8, unit: 'vasos', reminders: [] })
   const at = (hh: number, mm = 0) => ({ ...NOW, minutes: hh * 60 + mm })
   const brushed = (n: number) => (n ? [{ habit_id: 'h1', log_date: '2026-10-21', value: n }] : [])
 
@@ -132,6 +134,39 @@ describe('planReminders: several reminders, independent of the goal', () => {
 
   it('a habit without reminders never sends anything', () => {
     for (const t of [at(8), at(14), at(22), at(23, 59)]) expect(plan([water], [], [], t)).toEqual([])
+  })
+})
+
+describe('planReminders: reminders by weekday', () => {
+  // "Hacer ejercicio": in the evening on weekdays, in the morning at the weekend
+  const exercise = habit({
+    name: 'Hacer ejercicio',
+    reminders: [
+      { time: '19:00', days: [1, 2, 3, 4, 5] },
+      { time: '10:00', days: [6, 7] },
+    ],
+  })
+  const wednesday = (hh: number) => ({ date: '2026-10-21', minutes: hh * 60 + 2 })
+  const saturday = (hh: number) => ({ date: '2026-10-24', minutes: hh * 60 + 2 })
+
+  it('weekdays: only the evening one', () => {
+    expect(plan([exercise], [], [], wednesday(19)).map((r) => r.time)).toEqual(['19:00'])
+    expect(plan([exercise], [], [], wednesday(10))).toEqual([])
+  })
+
+  it('weekend: only the morning one', () => {
+    expect(plan([exercise], [], [], saturday(10)).map((r) => r.time)).toEqual(['10:00'])
+    expect(plan([exercise], [], [], saturday(19))).toEqual([])
+  })
+
+  it('the same time in two reminders sends it once', () => {
+    const h = habit({ reminders: [{ time: '08:00', days: [3] }, { time: '08:00', days: [1, 3] }] })
+    expect(plan([h]).map((r) => r.time)).toEqual(['08:00'])
+  })
+
+  it('still only on days the habit is due', () => {
+    const weekdaysOnly = habit({ frequency_type: 'weekdays', frequency_days: [1, 2, 3, 4, 5], reminders: daily('10:00') })
+    expect(plan([weekdaysOnly], [], [], saturday(10))).toEqual([])
   })
 })
 

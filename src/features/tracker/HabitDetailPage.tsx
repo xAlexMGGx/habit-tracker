@@ -19,7 +19,15 @@ import type { JarPeriod } from '../../lib/jar'
 import { formatNumber, formatPercent, habitColorStyle } from '../../lib/habitMeta'
 import { habitsForDay, logsFor } from '../../lib/schedule'
 import { type Rate, computeStats } from '../../lib/stats'
-import { type BarsRange, type RingPeriod, availableViz, effectiveViz, readVizConfig } from '../../lib/vizConfig'
+import {
+  type BarsRange,
+  type RingPeriod,
+  availableViz,
+  effectiveViz,
+  jarPeriodsFor,
+  readVizConfig,
+  ringPeriodsFor,
+} from '../../lib/vizConfig'
 import ui from '../../styles/ui.module.css'
 import { ValueSheet } from '../agenda/ValueSheet'
 import { HabitViz } from '../viz/HabitViz'
@@ -143,10 +151,10 @@ function Detail({ habit }: { habit: Habit }) {
             <Segmented<RingPeriod>
               value={config.ringPeriod}
               onChange={(ringPeriod) => setConfig((c) => ({ ...c, ringPeriod }))}
-              options={[
-                { value: 'week', label: t('viz.thisWeek') },
-                { value: 'month', label: t('viz.thisMonth') },
-              ]}
+              options={ringPeriodsFor(habit.type).map((p) => ({
+                value: p,
+                label: p === 'day' ? t('common.today') : p === 'week' ? t('viz.thisWeek') : t('viz.thisMonth'),
+              }))}
             />
           </div>
         ) : null}
@@ -167,7 +175,7 @@ function Detail({ habit }: { habit: Habit }) {
             <Segmented<JarPeriod>
               value={config.jarPeriod}
               onChange={(jarPeriod) => setConfig((c) => ({ ...c, jarPeriod }))}
-              options={(['week', 'month', 'quarter', 'year'] as const).map((p) => ({
+              options={jarPeriodsFor(habit.type).map((p) => ({
                 value: p,
                 label: t(`habits.fields.jarPeriods.${p}`),
               }))}

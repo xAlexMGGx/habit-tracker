@@ -11,6 +11,8 @@ export type AgendaSubtab = 'todos' | 'habits'
 export type Language = 'es' | 'en'
 /** Traffic light: high = red, medium = orange, low = green. */
 export type TodoPriority = 'high' | 'medium' | 'low'
+/** A reminder time ('HH:MM') and the ISO weekdays it rings on (1 = Monday). */
+export type HabitReminder = { time: string; days: number[] }
 /** Apple Health metric that fills a habit (phase 6). */
 export type HealthMetric = 'steps' | 'sleep' | 'workouts'
 
@@ -64,7 +66,7 @@ export type Database = {
           frequency_times: number | null
           frequency_interval: number | null
           start_date: string
-          reminder_times: string[]
+          reminders: HabitReminder[]
           health_metric: HealthMetric | null
           viz_type: VizType
           viz_config: Json
@@ -88,7 +90,7 @@ export type Database = {
           frequency_times?: number | null
           frequency_interval?: number | null
           start_date?: string
-          reminder_times?: string[]
+          reminders?: HabitReminder[]
           health_metric?: HealthMetric | null
           viz_type: VizType
           viz_config?: Json
@@ -108,7 +110,7 @@ export type Database = {
           frequency_times?: number | null
           frequency_interval?: number | null
           start_date?: string
-          reminder_times?: string[]
+          reminders?: HabitReminder[]
           health_metric?: HealthMetric | null
           viz_type?: VizType
           viz_config?: Json
@@ -154,6 +156,8 @@ export type Database = {
           priority: TodoPriority
           started_at: string | null
           notes: string | null
+          /** Manual order within the day (and priority). New and moved to-dos go last. */
+          sort_order: number
           created_at: string
           updated_at: string
         }
@@ -177,6 +181,7 @@ export type Database = {
           priority?: TodoPriority
           started_at?: string | null
           notes?: string | null
+          sort_order?: number
         }
         Relationships: []
       }
@@ -232,6 +237,10 @@ export type Database = {
     Functions: {
       reorder_habits: {
         Args: { habit_ids: string[] }
+        Returns: undefined
+      }
+      reorder_todos: {
+        Args: { todo_ids: string[] }
         Returns: undefined
       }
     }

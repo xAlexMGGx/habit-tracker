@@ -1,7 +1,25 @@
-import { Bell, Check, MessageSquare } from 'lucide-react'
-import type { CSSProperties } from 'react'
+import {
+  DndContext,
+  type DragEndEvent,
+  KeyboardSensor,
+  PointerSensor,
+  closestCenter,
+  useSensor,
+  useSensors,
+} from '@dnd-kit/core'
+import { restrictToParentElement, restrictToVerticalAxis } from '@dnd-kit/modifiers'
+import {
+  SortableContext,
+  arrayMove,
+  sortableKeyboardCoordinates,
+  useSortable,
+  verticalListSortingStrategy,
+} from '@dnd-kit/sortable'
+import { CSS } from '@dnd-kit/utilities'
+import { Bell, Check, Menu, MessageSquare } from 'lucide-react'
+import type { CSSProperties, ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useUpdateTodo } from '../../data/todos'
+import { useReorderTodos, useUpdateTodo } from '../../data/todos'
 import type { Todo } from '../../lib/database.types'
 import { PRIORITY_COLOR, groupByPriority, sortPending } from '../../lib/todoMeta'
 import ui from '../../styles/ui.module.css'
@@ -13,10 +31,12 @@ type RowProps = {
   editable: boolean
   subtitle?: string
   onOpen: (todo: Todo) => void
+  /** Drag to reorder (SortableTodoRow). */
+  sortable?: { setNodeRef: (el: HTMLElement | null) => void; style: CSSProperties; dragging: boolean; handle: ReactNode }
 }
 
 /** Check ring in the priority's color; half filled while in progress. */
-export function TodoRow({ todo, editable, subtitle, onOpen }: RowProps) {
+export function TodoRow({ todo, editable, subtitle, onOpen, sortable }: RowProps) {
   const { t } = useTranslation()
   const update = useUpdateTodo()
   const done = todo.completed_at != null
@@ -24,8 +44,9 @@ export function TodoRow({ todo, editable, subtitle, onOpen }: RowProps) {
 
   return (
     <div
-      className={`${ui.row} ${s.todoRow} ${done ? s.todoDone : ''}`}
-      style={{ '--p': PRIORITY_COLOR[todo.priority] } as CSSProperties}
+      ref={sortable?.setNodeRef}
+      className={`${ui.row} ${s.todoRow} ${done ? s.todoDone : ''} ${sortable?.dragging ? s.todoDragging : ''}`}
+      style={{ '--p': PRIORITY_COLOR[todo.priority], ...sortable?.style } as CSSProperties}
     >
       <button
         type="button"
@@ -52,7 +73,38 @@ export function TodoRow({ todo, editable, subtitle, onOpen }: RowProps) {
         </span>
         {subtitle ? <span className={s.todoSubtitle}>{subtitle}</span> : null}
       </button>
+      {sortable?.handle}
     </div>
+  )
+}
+
+/** A to-do of the day with a ≡ handle, like the habits in Mis hábitos. */
+function SortableTodoRow(props: Omit<RowProps, 'subtitle' | 'sortable'>) {
+  const { t } = useTranslation()
+  const { attributes, listeners, setNodeRef, setActivatorNodeRef, transform, transition, isDragging } = useSortable({
+    id: props.todo.id,
+  })
+  return (
+    <TodoRow
+      {...props}
+      sortable={{
+        setNodeRef,
+        dragging: isDragging,
+        style: { transform: CSS.Transform.toString(transform), transition },
+        handle: (
+          <button
+            type="button"
+            ref={setActivatorNodeRef}
+            className={s.todoHandle}
+            aria-label={t('habits.dragHandle')}
+            {...attributes}
+            {...listeners}
+          >
+            <Menu size={20} />
+          </button>
+        ),
+      }}
+    />
   )
 }
 
@@ -66,11 +118,28 @@ type ViewProps = {
 
 export function TodosView({ todos, pending, editable, pendingLabel, onOpen }: ViewProps) {
   const { t } = useTranslation()
+  const reorder = useReorderTodos()
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 4 } }),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
+  )
+  const groups = groupByPriority(todos)
+
+  // To-dos move only within their priority; the day's whole order is saved in one go.
+  const onDragEnd =
+    (group: Todo[]) =>
+    ({ active, over }: DragEndEvent) => {
+      if (!over || active.id === over.id) return
+      const ids = group.map((td) => td.id)
+      const moved = arrayMove(ids, ids.indexOf(String(active.id)), ids.indexOf(String(over.id)))
+      reorder.mutate(groups.flatMap((g) => (g.todos === group ? moved : g.todos.map((td) => td.id))))
+    }
+
   return (
     <>
       {todos.length ? (
         // Red first, then orange, then green; each priority in its own block.
-        groupByPriority(todos).map(({ priority, todos: group }) => (
+        groups.map(({ priority, todos: group }) => (
           <div
             key={priority}
             className={`${ui.section} ${s.prioritySection}`}
@@ -81,9 +150,22 @@ export function TodosView({ todos, pending, editable, pendingLabel, onOpen }: Vi
               {t(`agenda.prioritySection.${priority}`)}
             </h2>
             <div className={`${ui.group} ${s.priorityGroup}`}>
-              {group.map((todo) => (
-                <TodoRow key={todo.id} todo={todo} editable={editable} onOpen={onOpen} />
-              ))}
+              {editable && group.length > 1 ? (
+                <DndContext
+                  sensors={sensors}
+                  collisionDetection={closestCenter}
+                  modifiers={[restrictToVerticalAxis, restrictToParentElement]}
+                  onDragEnd={onDragEnd(group)}
+                >
+                  <SortableContext items={group.map((td) => td.id)} strategy={verticalListSortingStrategy}>
+                    {group.map((todo) => (
+                      <SortableTodoRow key={todo.id} todo={todo} editable={editable} onOpen={onOpen} />
+                    ))}
+                  </SortableContext>
+                </DndContext>
+              ) : (
+                group.map((todo) => <TodoRow key={todo.id} todo={todo} editable={editable} onOpen={onOpen} />)
+              )}
             </div>
           </div>
         ))

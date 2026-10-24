@@ -135,6 +135,11 @@
   opacity: 0.35;
 }
 
+.weekdaysCompact .weekday {
+  max-width: 34px;
+  font-size: 13px;
+}
+
 /* Colors */
 .colors {
   display: grid;

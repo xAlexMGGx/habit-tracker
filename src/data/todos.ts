@@ -14,6 +14,7 @@ const rangeKey = (from: DateStr, to: DateStr): RangeKey => ['todos', 'range', fr
 const pendingKey = (today: DateStr): PendingKey => ['todos', 'pending', today]
 
 const byCreated = (a: Todo, b: Todo) => a.created_at.localeCompare(b.created_at)
+const byOrder = (a: Todo, b: Todo) => a.sort_order - b.sort_order || byCreated(a, b)
 const byDueThenCreated = (a: Todo, b: Todo) => a.due_date.localeCompare(b.due_date) || byCreated(a, b)
 
 export function useTodosInRange(from: DateStr, to: DateStr) {
@@ -21,7 +22,14 @@ export function useTodosInRange(from: DateStr, to: DateStr) {
     queryKey: rangeKey(from, to),
     queryFn: () =>
       fetchAllRows<Todo>((f, t) =>
-        supabase.from('todos').select('*').gte('due_date', from).lte('due_date', to).order('created_at').range(f, t),
+        supabase
+          .from('todos')
+          .select('*')
+          .gte('due_date', from)
+          .lte('due_date', to)
+          .order('sort_order')
+          .order('created_at')
+          .range(f, t),
       ),
     placeholderData: keepPreviousData,
   })
@@ -60,7 +68,7 @@ async function patchCaches(qc: QueryClient, id: string, next: Todo | null): Prom
     const k = key as unknown as TodoKey
     const rest = list.filter((t) => t.id !== id)
     const updated = next && belongs(next, k) ? [...rest, next] : rest
-    qc.setQueryData(key, updated.sort(k[1] === 'range' ? byCreated : byDueThenCreated))
+    qc.setQueryData(key, updated.sort(k[1] === 'range' ? byOrder : byDueThenCreated))
   }
   return snapshot
 }
@@ -112,6 +120,8 @@ export function makeTodo(title: string, dueDate: DateStr, priority: TodoPriority
     priority,
     started_at: null,
     notes: null,
+    // The database gives it the same kind of value (milliseconds now), so it goes last.
+    sort_order: Date.now(),
     created_at: now,
     updated_at: now,
   }
@@ -121,16 +131,55 @@ export type TodoPatch = Partial<
   Pick<Todo, 'title' | 'due_date' | 'completed_at' | 'priority' | 'started_at' | 'notes' | 'reminder_time'>
 >
 
+/** A to-do moved to another day or priority goes last there. */
+function withOrder(todo: Todo, patch: TodoPatch, now: number): TodoPatch & { sort_order?: number } {
+  const moved = (patch.due_date != null && patch.due_date !== todo.due_date) || (patch.priority != null && patch.priority !== todo.priority)
+  return moved ? { ...patch, sort_order: now } : patch
+}
+
+type UpdateVars = { todo: Todo; patch: TodoPatch; at?: number }
+
 export function useUpdateTodo() {
+  const qc = useQueryClient()
+  const mutation = useMutation({
+    mutationKey: ['todos'],
+    scope: { id: 'todos' },
+    mutationFn: async ({ todo, patch, at = Date.now() }: UpdateVars) => {
+      const { error } = await supabase.from('todos').update(withOrder(todo, patch, at)).eq('id', todo.id)
+      if (error) throw error
+    },
+    onMutate: ({ todo, patch, at = Date.now() }) => patchCaches(qc, todo.id, { ...todo, ...withOrder(todo, patch, at) }),
+    onError: (_e, _v, snapshot) => restore(qc, snapshot),
+    onSettled: () => settle(qc),
+  })
+  // One timestamp per change, so the optimistic order and the saved one match.
+  return {
+    ...mutation,
+    mutate: (vars: UpdateVars, options?: Parameters<typeof mutation.mutate>[1]) =>
+      mutation.mutate({ ...vars, at: vars.at ?? Date.now() }, options),
+  }
+}
+
+/** Saves the order of a day's to-dos (all of them, in display order). */
+export function useReorderTodos() {
   const qc = useQueryClient()
   return useMutation({
     mutationKey: ['todos'],
     scope: { id: 'todos' },
-    mutationFn: async ({ todo, patch }: { todo: Todo; patch: TodoPatch }) => {
-      const { error } = await supabase.from('todos').update(patch).eq('id', todo.id)
+    mutationFn: async (ids: string[]) => {
+      const { error } = await supabase.rpc('reorder_todos', { todo_ids: ids })
       if (error) throw error
     },
-    onMutate: ({ todo, patch }) => patchCaches(qc, todo.id, { ...todo, ...patch }),
+    onMutate: async (ids) => {
+      await qc.cancelQueries({ queryKey: ['todos'] })
+      const snapshot = qc.getQueriesData<Todo[]>({ queryKey: ['todos'] })
+      const order = new Map(ids.map((id, i) => [id, i + 1]))
+      for (const [key, list] of snapshot) {
+        if (!list || (key as unknown as TodoKey)[1] !== 'range') continue
+        qc.setQueryData(key, list.map((t) => (order.has(t.id) ? { ...t, sort_order: order.get(t.id)! } : t)).sort(byOrder))
+      }
+      return snapshot
+    },
     onError: (_e, _v, snapshot) => restore(qc, snapshot),
     onSettled: () => settle(qc),
   })

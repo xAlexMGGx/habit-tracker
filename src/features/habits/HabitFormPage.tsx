@@ -8,9 +8,9 @@ import { ColorPicker, EmojiPicker, HabitIcon, Segmented, Spinner, Stepper, Weekd
 import { useUser } from '../../auth/AuthProvider'
 import { useCreateHabit, useHabits, useSetArchived, useUpdateHabit } from '../../data/habits'
 import { useToday } from '../../hooks/useToday'
-import type { FrequencyType, Habit, HabitType, HealthMetric, VizType } from '../../lib/database.types'
+import type { FrequencyType, Habit, HabitReminder, HabitType, HealthMetric, VizType } from '../../lib/database.types'
 import { DEFAULT_VIZ, HABIT_TYPES, HEALTH_DEFAULTS, HEALTH_METRICS, frequenciesFor } from '../../lib/habitMeta'
-import { type JarPeriod, periodEnd, periodStart, suggestedCapacity } from '../../lib/jar'
+import { type JarPeriod, marbleValue, periodEnd, periodStart, suggestedCapacity } from '../../lib/jar'
 import { newId } from '../../lib/platform'
 import { usePush } from '../../lib/push'
 import { sampleHabit, sampleLogs } from '../../lib/sampleData'
@@ -20,7 +20,10 @@ import {
   type RingPeriod,
   type VizConfig,
   availableViz,
+  configFor,
+  jarPeriodsFor,
   readVizConfig,
+  ringPeriodsFor,
   writeVizConfig,
 } from '../../lib/vizConfig'
 import ui from '../../styles/ui.module.css'
@@ -44,8 +47,8 @@ type FormState = {
   planned: number[]
   interval: number
   startDate: string
-  /** Reminder times, 'HH:MM' */
-  reminders: string[]
+  /** Reminder times ('HH:MM'), each with the weekdays it rings on. */
+  reminders: HabitReminder[]
   viz: VizType
   /** Ring, bars and jar period. Jar capacity and marble value are edited as text below. */
   vizConfig: VizConfig
@@ -55,7 +58,7 @@ type FormState = {
 }
 
 type Errors = Partial<
-  Record<'name' | 'icon' | 'target' | 'quickStep' | 'days' | 'interval' | 'startDate' | 'capacity', string>
+  Record<'name' | 'icon' | 'target' | 'quickStep' | 'days' | 'interval' | 'startDate' | 'capacity' | 'reminders', string>
 >
 
 const toNumber = (text: string) => Number(text.trim().replace(',', '.'))
@@ -63,6 +66,20 @@ const toNumber = (text: string) => Number(text.trim().replace(',', '.'))
 const MAX_REMINDERS = 10
 /** Times offered when adding a reminder (the first one not already used). */
 const DEFAULT_TIMES = ['09:00', '14:00', '21:00', '07:00', '11:00', '17:00', '19:00', '23:00', '10:00', '16:00']
+const EVERY_DAY = [1, 2, 3, 4, 5, 6, 7]
+
+/** Reminders as saved: sorted by time, without exact repeats. */
+function cleanReminders(reminders: HabitReminder[]): HabitReminder[] {
+  const seen = new Set<string>()
+  return reminders
+    .filter((r) => r.time && r.days.length)
+    .map((r) => ({ time: r.time.slice(0, 5), days: [...r.days].sort((a, b) => a - b) }))
+    .sort((a, b) => a.time.localeCompare(b.time) || a.days[0] - b.days[0])
+    .filter((r) => {
+      const key = `${r.time}|${r.days.join()}`
+      return !seen.has(key) && (seen.add(key), true)
+    })
+}
 
 function jarFields(config: VizConfig): Pick<FormState, 'capacityMode' | 'customCapacity' | 'marbleValue'> {
   return {
@@ -76,11 +93,11 @@ function jarFields(config: VizConfig): Pick<FormState, 'capacityMode' | 'customC
 function buildVizConfig(form: FormState): VizConfig {
   const custom = Math.round(toNumber(form.customCapacity))
   const value = toNumber(form.marbleValue)
-  return {
+  return configFor(form.type, {
     ...form.vizConfig,
     jarCapacity: form.capacityMode === 'custom' ? (custom >= 1 ? custom : 'all') : form.capacityMode,
     jarMarbleValue: form.type === 'quantitative' && value > 0 ? value : null,
-  }
+  })
 }
 
 function initialState(habit: Habit | null, today: string): FormState {
@@ -123,7 +140,7 @@ function initialState(habit: Habit | null, today: string): FormState {
     planned: habit.frequency_type === 'times_per_week' ? (habit.frequency_days ?? []) : [1, 3, 5],
     interval: habit.frequency_interval ?? 2,
     startDate: habit.start_date,
-    reminders: habit.reminder_times.map((t) => t.slice(0, 5)),
+    reminders: habit.reminders.map((r) => ({ time: r.time.slice(0, 5), days: [...r.days] })),
     viz: habit.viz_type,
     vizConfig,
     ...jarFields(vizConfig),
@@ -249,7 +266,9 @@ function HabitForm({ habit }: { habit: Habit | null }) {
     if (form.frequency === 'every_n_days' && !(form.interval >= 2 && form.interval <= 365))
       e.interval = t('habits.errors.intervalRange')
     if (!form.startDate) e.startDate = t('habits.errors.startDateRequired')
-    if (form.viz === 'marble_jar' && form.capacityMode === 'custom' && !(Math.round(toNumber(form.customCapacity)) >= 1))
+    if (form.reminders.some((r) => !r.days.length)) e.reminders = t('habits.errors.reminderDays')
+    const dailyJar = buildVizConfig(form).jarPeriod === 'day'
+    if (form.viz === 'marble_jar' && !dailyJar && form.capacityMode === 'custom' && !(Math.round(toNumber(form.customCapacity)) >= 1))
       e.capacity = t('habits.errors.capacityRequired')
     return e
   }
@@ -278,7 +297,7 @@ function HabitForm({ habit }: { habit: Habit | null }) {
       frequency_times: form.frequency === 'times_per_week' ? form.times : null,
       frequency_interval: form.frequency === 'every_n_days' ? form.interval : null,
       start_date: form.startDate,
-      reminder_times: [...new Set(form.reminders.filter(Boolean))].sort(),
+      reminders: cleanReminders(form.reminders),
       viz_type: form.viz,
       viz_config: writeVizConfig(habit?.viz_config, vizConfig),
     }
@@ -503,41 +522,54 @@ function HabitForm({ habit }: { habit: Habit | null }) {
         title={t('habits.fields.reminders')}
         footer={[
           form.type === 'negative' ? t('habits.fields.remindersHintNegative') : t('habits.fields.remindersHint'),
+          form.reminders.length ? t('habits.fields.reminderDaysHint') : '',
           form.reminders.length && push.status !== 'on' && push.status !== 'loading' ? t('habits.fields.remindersOff') : '',
         ].join(' ')}
       >
         <div className={ui.group}>
-          {form.reminders.map((time, i) => (
-            <div key={i} className={ui.row}>
-              <Bell size={18} className={ui.muted} />
-              <input
-                type="time"
-                className={`${ui.rowInput} ${ui.left} ${s.timeInput}`}
-                value={time}
-                aria-label={t('habits.fields.reminders')}
-                onChange={(e) => set('reminders', form.reminders.map((x, j) => (j === i ? e.target.value : x)))}
-              />
-              <button
-                type="button"
-                className={`${ui.iconBtn} ${ui.danger}`}
-                aria-label={t('habits.fields.removeReminder')}
-                onClick={() => set('reminders', form.reminders.filter((_, j) => j !== i))}
-              >
-                <X size={18} />
-              </button>
-            </div>
-          ))}
+          {form.reminders.map((reminder, i) => {
+            const change = (patch: Partial<HabitReminder>) =>
+              set('reminders', form.reminders.map((r, j) => (j === i ? { ...r, ...patch } : r)))
+            return (
+              <div key={i} className={`${ui.row} ${s.column} ${s.reminder}`}>
+                <div className={s.reminderTime}>
+                  <Bell size={18} className={ui.muted} />
+                  <input
+                    type="time"
+                    className={`${ui.rowInput} ${ui.left} ${s.timeInput}`}
+                    value={reminder.time}
+                    aria-label={t('habits.fields.reminders')}
+                    onChange={(e) => change({ time: e.target.value })}
+                  />
+                  <button
+                    type="button"
+                    className={`${ui.iconBtn} ${ui.danger}`}
+                    aria-label={t('habits.fields.removeReminder')}
+                    onClick={() => set('reminders', form.reminders.filter((_, j) => j !== i))}
+                  >
+                    <X size={18} />
+                  </button>
+                </div>
+                <WeekdayPicker compact value={reminder.days} onChange={(days) => change({ days })} />
+              </div>
+            )
+          })}
           {form.reminders.length < MAX_REMINDERS ? (
             <button
               type="button"
               className={ui.rowButton}
-              onClick={() => set('reminders', [...form.reminders, DEFAULT_TIMES.find((d) => !form.reminders.includes(d)) ?? '09:00'])}
+              onClick={() => {
+                const used = form.reminders.map((r) => r.time)
+                const time = DEFAULT_TIMES.find((d) => !used.includes(d)) ?? '09:00'
+                set('reminders', [...form.reminders, { time, days: EVERY_DAY }])
+              }}
             >
               <Plus size={18} className={s.addIcon} />
               <span className={`${ui.rowLabel} ${s.addLabel}`}>{t('habits.fields.addReminder')}</span>
             </button>
           ) : null}
         </div>
+        {errors.reminders ? <p className={ui.error}>{errors.reminders}</p> : null}
       </Section>
 
       <Section footer={t('habits.fields.startDateHint')}>
@@ -593,12 +625,9 @@ function HabitForm({ habit }: { habit: Habit | null }) {
               <span className={ui.rowLabel}>{t('habits.fields.ringPeriod')}</span>
               <div className={s.paramControl}>
                 <Segmented<RingPeriod>
-                  value={form.vizConfig.ringPeriod}
+                  value={vizConfig.ringPeriod}
                   onChange={(ringPeriod) => set('vizConfig', { ...form.vizConfig, ringPeriod })}
-                  options={[
-                    { value: 'week', label: t('viz.week') },
-                    { value: 'month', label: t('viz.month') },
-                  ]}
+                  options={ringPeriodsFor(form.type).map((p) => ({ value: p, label: t(`viz.${p}`) }))}
                 />
               </div>
             </div>
@@ -627,53 +656,58 @@ function HabitForm({ habit }: { habit: Habit | null }) {
               <div className={`${ui.row} ${s.column}`}>
                 <p className={s.fieldLabel}>{t('habits.fields.jarPeriod')}</p>
                 <Segmented<JarPeriod>
-                  value={form.vizConfig.jarPeriod}
+                  value={vizConfig.jarPeriod}
                   onChange={(jarPeriod) => set('vizConfig', { ...form.vizConfig, jarPeriod })}
-                  options={(['week', 'month', 'quarter', 'year'] as const).map((p) => ({
+                  options={jarPeriodsFor(form.type).map((p) => ({
                     value: p,
                     label: t(`habits.fields.jarPeriods.${p}`),
                   }))}
                 />
               </div>
             </div>
-            <h3 className={`${ui.sectionTitle} ${s.subTitle}`}>{t('habits.fields.jarCapacity')}</h3>
-            <div className={ui.group} role="radiogroup">
-              {(['all', 'most'] as const).map((mode) => (
-                <button
-                  key={mode}
-                  type="button"
-                  role="radio"
-                  aria-checked={form.capacityMode === mode}
-                  className={ui.rowButton}
-                  onClick={() => set('capacityMode', mode)}
-                >
-                  <span className={ui.rowLabel}>
-                    {t(`habits.fields.capacity_${mode}`)}
-                    <span className={s.capacityCount}>{t('habits.fields.marbles', { count: jarSuggestions[mode] })}</span>
-                  </span>
-                  <span className={`${s.radio} ${form.capacityMode === mode ? s.radioOn : ''}`} />
-                </button>
-              ))}
-              <div
-                role="radio"
-                aria-checked={form.capacityMode === 'custom'}
-                className={ui.row}
-                onClick={() => form.capacityMode !== 'custom' && set('capacityMode', 'custom')}
-              >
-                <span className={ui.rowLabel}>{t('habits.fields.capacity_custom')}</span>
-                <input
-                  className={`${ui.rowInput} ${s.capacityInput}`}
-                  inputMode="numeric"
-                  value={form.customCapacity}
-                  placeholder={String(jarSuggestions.all)}
-                  aria-label={t('habits.fields.capacity_custom')}
-                  onFocus={() => set('capacityMode', 'custom')}
-                  onChange={(e) => set('customCapacity', e.target.value.replace(/\D/g, ''))}
-                />
-                <span className={`${s.radio} ${form.capacityMode === 'custom' ? s.radioOn : ''}`} />
-              </div>
-            </div>
-            {errors.capacity ? <p className={ui.error}>{errors.capacity}</p> : null}
+            {/* A daily jar always holds the daily goal, so there's no capacity to choose. */}
+            {vizConfig.jarPeriod === 'day' ? null : (
+              <>
+                <h3 className={`${ui.sectionTitle} ${s.subTitle}`}>{t('habits.fields.jarCapacity')}</h3>
+                <div className={ui.group} role="radiogroup">
+                  {(['all', 'most'] as const).map((mode) => (
+                    <button
+                      key={mode}
+                      type="button"
+                      role="radio"
+                      aria-checked={form.capacityMode === mode}
+                      className={ui.rowButton}
+                      onClick={() => set('capacityMode', mode)}
+                    >
+                      <span className={ui.rowLabel}>
+                        {t(`habits.fields.capacity_${mode}`)}
+                        <span className={s.capacityCount}>{t('habits.fields.marbles', { count: jarSuggestions[mode] })}</span>
+                      </span>
+                      <span className={`${s.radio} ${form.capacityMode === mode ? s.radioOn : ''}`} />
+                    </button>
+                  ))}
+                  <div
+                    role="radio"
+                    aria-checked={form.capacityMode === 'custom'}
+                    className={ui.row}
+                    onClick={() => form.capacityMode !== 'custom' && set('capacityMode', 'custom')}
+                  >
+                    <span className={ui.rowLabel}>{t('habits.fields.capacity_custom')}</span>
+                    <input
+                      className={`${ui.rowInput} ${s.capacityInput}`}
+                      inputMode="numeric"
+                      value={form.customCapacity}
+                      placeholder={String(jarSuggestions.all)}
+                      aria-label={t('habits.fields.capacity_custom')}
+                      onFocus={() => set('capacityMode', 'custom')}
+                      onChange={(e) => set('customCapacity', e.target.value.replace(/\D/g, ''))}
+                    />
+                    <span className={`${s.radio} ${form.capacityMode === 'custom' ? s.radioOn : ''}`} />
+                  </div>
+                </div>
+                {errors.capacity ? <p className={ui.error}>{errors.capacity}</p> : null}
+              </>
+            )}
             {form.type === 'quantitative' ? (
               <div className={`${ui.group} ${s.vizParams}`}>
                 <label className={ui.row}>
@@ -682,7 +716,7 @@ function HabitForm({ habit }: { habit: Habit | null }) {
                     className={ui.rowInput}
                     inputMode="decimal"
                     value={form.marbleValue}
-                    placeholder={targetNumber > 0 ? String(targetNumber) : '1'}
+                    placeholder={String(marbleValue({ type: 'quantitative', target: targetNumber > 0 ? targetNumber : 1 }, vizConfig))}
                     onChange={(e) => set('marbleValue', e.target.value.replace(/[^\d.,]/g, ''))}
                   />
                   {form.unit.trim() ? <span className={ui.muted}>{form.unit.trim()}</span> : null}
@@ -690,8 +724,8 @@ function HabitForm({ habit }: { habit: Habit | null }) {
               </div>
             ) : null}
             <p className={ui.sectionFooter}>
-              {form.type === 'quantitative' ? `${t('habits.fields.jarMarbleHint')} ` : ''}
-              {t('habits.fields.jarCapacityHint')}
+              {form.type === 'quantitative' && vizConfig.jarPeriod !== 'day' ? `${t('habits.fields.jarMarbleHint')} ` : ''}
+              {vizConfig.jarPeriod === 'day' ? t('habits.fields.jarDayHint') : t('habits.fields.jarCapacityHint')}
             </p>
           </>
         ) : null}

@@ -80,15 +80,17 @@ type WeekdayPickerProps = {
   onChange: (days: number[]) => void
   /** Maximum number of selected days (times per week). */
   max?: number
+  /** Smaller circles, e.g. under each reminder time. */
+  compact?: boolean
 }
 
 /** Seven round toggles, Monday first. Values are ISO weekdays (1 = Monday). */
-export function WeekdayPicker({ value, onChange, max }: WeekdayPickerProps) {
+export function WeekdayPicker({ value, onChange, max, compact }: WeekdayPickerProps) {
   const { t } = useTranslation()
   const initials = t('weekdays.initials', { returnObjects: true }) as string[]
   const full = max != null && value.length >= max
   return (
-    <div className={s.weekdays}>
+    <div className={`${s.weekdays} ${compact ? s.weekdaysCompact : ''}`}>
       {initials.map((initial, i) => {
         const day = i + 1
         const on = value.includes(day)

@@ -15,7 +15,8 @@ export function effectiveViz(habit: Pick<Habit, 'type' | 'viz_type'>): VizType {
   return IMPLEMENTED_VIZ.includes(habit.viz_type) ? habit.viz_type : DEFAULT_VIZ[habit.type]
 }
 
-export type RingPeriod = 'week' | 'month'
+/** 'day' (quantitative habits only): today's amount towards the daily goal. */
+export type RingPeriod = 'day' | 'week' | 'month'
 export type BarsRange = 7 | 30
 
 /** Parameters stored in habits.viz_config. Unknown or missing values fall back to defaults. */
@@ -32,7 +33,8 @@ export const DEFAULT_VIZ_CONFIG: VizConfig = {
   jarMarbleValue: null,
 }
 
-const JAR_PERIODS: JarPeriod[] = ['week', 'month', 'quarter', 'year']
+const RING_PERIODS: RingPeriod[] = ['day', 'week', 'month']
+const JAR_PERIODS: JarPeriod[] = ['day', 'week', 'month', 'quarter', 'year']
 
 function readCapacity(v: Json | undefined): JarCapacity {
   if (v === 'most') return 'most'
@@ -43,11 +45,29 @@ function readCapacity(v: Json | undefined): JarCapacity {
 export function readVizConfig(raw: Json | null | undefined): VizConfig {
   const obj = raw && typeof raw === 'object' && !Array.isArray(raw) ? raw : {}
   return {
-    ringPeriod: obj.ringPeriod === 'month' ? 'month' : 'week',
+    ringPeriod: RING_PERIODS.includes(obj.ringPeriod as RingPeriod) ? (obj.ringPeriod as RingPeriod) : 'week',
     barsRange: obj.barsRange === 30 ? 30 : 7,
     jarPeriod: JAR_PERIODS.includes(obj.jarPeriod as JarPeriod) ? (obj.jarPeriod as JarPeriod) : 'month',
     jarCapacity: readCapacity(obj.jarCapacity),
     jarMarbleValue: typeof obj.jarMarbleValue === 'number' && obj.jarMarbleValue > 0 ? obj.jarMarbleValue : null,
+  }
+}
+
+/** Periods each type can use: the daily ones only make sense with an amount to reach. */
+export function ringPeriodsFor(type: HabitType): RingPeriod[] {
+  return type === 'quantitative' ? RING_PERIODS : RING_PERIODS.filter((p) => p !== 'day')
+}
+
+export function jarPeriodsFor(type: HabitType): JarPeriod[] {
+  return type === 'quantitative' ? JAR_PERIODS : JAR_PERIODS.filter((p) => p !== 'day')
+}
+
+/** The config as a habit of this type can use it (a daily period falls back to the default). */
+export function configFor(type: HabitType, config: VizConfig): VizConfig {
+  return {
+    ...config,
+    ringPeriod: ringPeriodsFor(type).includes(config.ringPeriod) ? config.ringPeriod : DEFAULT_VIZ_CONFIG.ringPeriod,
+    jarPeriod: jarPeriodsFor(type).includes(config.jarPeriod) ? config.jarPeriod : DEFAULT_VIZ_CONFIG.jarPeriod,
   }
 }
 

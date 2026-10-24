@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest'
 import { addDays } from './dates'
 import type { ScheduleHabit } from './schedule'
-import { computeStats, dayStatusFn, intensity, periodProgress } from './stats'
+import { configFor, readVizConfig } from './vizConfig'
+import { computeStats, dayProgress, dayStatusFn, intensity, periodProgress } from './stats'
 
 const base: ScheduleHabit = {
   type: 'boolean',
@@ -157,5 +158,21 @@ describe('periodProgress (ring) & intensity', () => {
     expect(intensity({ ...base, type: 'quantitative', target: 8 }, 12)).toBe(1)
     expect(intensity({ ...base, type: 'negative' }, 0)).toBe(1)
     expect(intensity(base, 1)).toBe(1)
+  })
+})
+
+describe('daily ring (quantitative)', () => {
+  it("today's amount over the daily goal, past 100 % too", () => {
+    const steps = new Map([['2026-10-24', 8432]])
+    expect(dayProgress({ target: 10000 }, steps, '2026-10-24')).toEqual({ value: 8432, target: 10000, pct: 0.8432 })
+    expect(dayProgress({ target: 10000 }, new Map([['2026-10-24', 12000]]), '2026-10-24').pct).toBe(1.2)
+    expect(dayProgress({ target: 10000 }, new Map(), '2026-10-24').pct).toBe(0)
+  })
+
+  it('a saved daily period only applies to quantitative habits', () => {
+    const daily = readVizConfig({ ringPeriod: 'day', jarPeriod: 'day' })
+    expect(configFor('quantitative', daily)).toMatchObject({ ringPeriod: 'day', jarPeriod: 'day' })
+    expect(configFor('boolean', daily)).toMatchObject({ ringPeriod: 'week', jarPeriod: 'month' })
+    expect(readVizConfig({ ringPeriod: 'year' }).ringPeriod).toBe('week')
   })
 })

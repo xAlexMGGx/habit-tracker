@@ -101,6 +101,13 @@ export function periodProgress(
   return rate(done, total)
 }
 
+/** Quantitative: today's amount towards the daily goal (the daily ring). pct can go past 1. */
+export function dayProgress(habit: Pick<ScheduleHabit, 'target'>, logs: HabitLogMap, today: DateStr) {
+  const value = logs.get(today) ?? 0
+  const target = habit.target ?? 0
+  return { value, target, pct: target > 0 ? value / target : null }
+}
+
 /** Streaks and percentages, computed over the days the habit was due (SPEC §3). */
 export function computeStats(habit: ScheduleHabit, logs: HabitLogMap, today: DateStr): HabitStats {
   const status = dayStatusFn(habit, logs, today)

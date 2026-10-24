@@ -34,7 +34,7 @@ export function sampleHabit(today: DateStr, overrides: Partial<Habit>): Habit {
     frequency_days: null,
     frequency_times: null,
     frequency_interval: null,
-    reminder_times: [],
+    reminders: [],
     health_metric: null,
     viz_type: DEFAULT_VIZ[type],
     viz_config: {},
