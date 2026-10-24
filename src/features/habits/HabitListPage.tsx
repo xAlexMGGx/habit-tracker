@@ -37,7 +37,13 @@ function SortableHabitRow({ habit }: { habit: Habit }) {
   const { attributes, listeners, setNodeRef, setActivatorNodeRef, transform, transition, isDragging } = useSortable({
     id: habit.id,
   })
-  const summary = [targetSummary(habit, t, i18n.language), frequencySummary(habit, t, locale)].filter(Boolean).join(' · ')
+  const summary = [
+    targetSummary(habit, t, i18n.language),
+    habit.health_metric ? t('health.listTag') : null,
+    frequencySummary(habit, t, locale),
+  ]
+    .filter(Boolean)
+    .join(' · ')
 
   return (
     <div

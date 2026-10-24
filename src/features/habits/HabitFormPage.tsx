@@ -8,8 +8,8 @@ import { ColorPicker, EmojiPicker, HabitIcon, Segmented, Spinner, Stepper, Weekd
 import { useUser } from '../../auth/AuthProvider'
 import { useCreateHabit, useHabits, useSetArchived, useUpdateHabit } from '../../data/habits'
 import { useToday } from '../../hooks/useToday'
-import type { FrequencyType, Habit, HabitType, VizType } from '../../lib/database.types'
-import { DEFAULT_VIZ, HABIT_TYPES, frequenciesFor } from '../../lib/habitMeta'
+import type { FrequencyType, Habit, HabitType, HealthMetric, VizType } from '../../lib/database.types'
+import { DEFAULT_VIZ, HABIT_TYPES, HEALTH_DEFAULTS, HEALTH_METRICS, frequenciesFor } from '../../lib/habitMeta'
 import { type JarPeriod, periodEnd, periodStart, suggestedCapacity } from '../../lib/jar'
 import { newId } from '../../lib/platform'
 import { usePush } from '../../lib/push'
@@ -33,6 +33,8 @@ type FormState = {
   icon: string
   color: string
   type: HabitType
+  /** Quantitative habits only: null = filled in by hand, else the Health metric (phase 6). */
+  healthMetric: HealthMetric | null
   target: string
   unit: string
   quickStep: string
@@ -89,6 +91,7 @@ function initialState(habit: Habit | null, today: string): FormState {
       icon: '✅',
       color: 'blue',
       type: 'boolean',
+      healthMetric: null,
       target: '',
       unit: '',
       quickStep: '1',
@@ -110,6 +113,7 @@ function initialState(habit: Habit | null, today: string): FormState {
     icon: habit.icon,
     color: habit.color,
     type: habit.type,
+    healthMetric: habit.health_metric,
     target: habit.target != null ? String(habit.target) : '',
     unit: habit.unit ?? '',
     quickStep: String(habit.quick_step),
@@ -206,6 +210,25 @@ function HabitForm({ habit }: { habit: Habit | null }) {
       frequency: frequenciesFor(type).includes(f.frequency) ? f.frequency : 'daily',
     }))
 
+  // A Health habit's unit is the metric's; the target and icon start from sensible values.
+  const changeHealthMetric = (metric: HealthMetric | null) =>
+    setForm((f) => {
+      if (!metric) return { ...f, healthMetric: null }
+      const d = HEALTH_DEFAULTS[metric]
+      const unit = t(`health.units.${metric}`)
+      const keepTarget = f.unit.trim().toLowerCase() === unit.toLowerCase() && toNumber(f.target) > 0
+      // Only replace an icon the user didn't choose: the default one or the previous metric's.
+      const autoIcon = f.icon === '✅' || (f.healthMetric != null && f.icon === HEALTH_DEFAULTS[f.healthMetric].icon)
+      return {
+        ...f,
+        healthMetric: metric,
+        unit,
+        target: keepTarget ? f.target : String(d.target),
+        quickStep: String(d.step),
+        icon: autoIcon ? d.icon : f.icon,
+      }
+    })
+
   const changeTimes = (times: number) =>
     setForm((f) => ({ ...f, times, planned: f.planned.slice(0, times) }))
 
@@ -244,6 +267,8 @@ function HabitForm({ habit }: { habit: Habit | null }) {
       target: quantitative ? toNumber(form.target) : null,
       unit: quantitative ? form.unit.trim() || null : null,
       quick_step: quantitative ? toNumber(form.quickStep) : 1,
+      // Only sent for habits that use (or used) Health, so the rest save fine even before the phase 6 migration.
+      ...(form.healthMetric || habit?.health_metric ? { health_metric: quantitative ? form.healthMetric : null } : {}),
       frequency_type: form.frequency,
       frequency_days:
         form.frequency === 'weekdays' ? form.weekdays : form.frequency === 'times_per_week' ? form.planned : null,
@@ -348,6 +373,32 @@ function HabitForm({ habit }: { habit: Habit | null }) {
       </Section>
 
       {form.type === 'quantitative' ? (
+        <Section
+          title={t('health.form.source')}
+          footer={form.healthMetric ? t(`health.form.hint.${form.healthMetric}`) : t('health.form.manualHint')}
+        >
+          <div className={`${s.inset} ${s.sourceControls}`}>
+            <Segmented<'manual' | 'health'>
+              value={form.healthMetric ? 'health' : 'manual'}
+              onChange={(v) => changeHealthMetric(v === 'health' ? (form.healthMetric ?? 'steps') : null)}
+              options={[
+                { value: 'manual', label: t('health.form.manual') },
+                { value: 'health', label: t('health.form.health') },
+              ]}
+            />
+            {form.healthMetric ? (
+              <Segmented<HealthMetric>
+                value={form.healthMetric}
+                onChange={changeHealthMetric}
+                ariaLabel={t('health.form.metric')}
+                options={HEALTH_METRICS.map((m) => ({ value: m, label: t(`health.metrics.${m}`) }))}
+              />
+            ) : null}
+          </div>
+        </Section>
+      ) : null}
+
+      {form.type === 'quantitative' ? (
         <Section>
           <div className={ui.group}>
             <label className={ui.row}>
@@ -359,26 +410,32 @@ function HabitForm({ habit }: { habit: Habit | null }) {
                 placeholder="8"
                 onChange={(e) => set('target', e.target.value.replace(/[^\d.,]/g, ''))}
               />
+              {form.healthMetric ? <span className={ui.muted}>{form.unit}</span> : null}
             </label>
-            <label className={ui.row}>
-              <span className={ui.rowLabel}>{t('habits.fields.unit')}</span>
-              <input
-                className={ui.rowInput}
-                value={form.unit}
-                maxLength={20}
-                placeholder={t('habits.fields.unitPlaceholder')}
-                onChange={(e) => set('unit', e.target.value)}
-              />
-            </label>
-            <label className={ui.row}>
-              <span className={ui.rowLabel}>{t('habits.fields.quickStep')}</span>
-              <input
-                className={ui.rowInput}
-                inputMode="decimal"
-                value={form.quickStep}
-                onChange={(e) => set('quickStep', e.target.value.replace(/[^\d.,]/g, ''))}
-              />
-            </label>
+            {/* Health habits: the unit is the metric's and there is no "+N" button. */}
+            {form.healthMetric ? null : (
+              <>
+                <label className={ui.row}>
+                  <span className={ui.rowLabel}>{t('habits.fields.unit')}</span>
+                  <input
+                    className={ui.rowInput}
+                    value={form.unit}
+                    maxLength={20}
+                    placeholder={t('habits.fields.unitPlaceholder')}
+                    onChange={(e) => set('unit', e.target.value)}
+                  />
+                </label>
+                <label className={ui.row}>
+                  <span className={ui.rowLabel}>{t('habits.fields.quickStep')}</span>
+                  <input
+                    className={ui.rowInput}
+                    inputMode="decimal"
+                    value={form.quickStep}
+                    onChange={(e) => set('quickStep', e.target.value.replace(/[^\d.,]/g, ''))}
+                  />
+                </label>
+              </>
+            )}
           </div>
           {errors.target ? <p className={ui.error}>{errors.target}</p> : null}
           {errors.quickStep ? <p className={ui.error}>{errors.quickStep}</p> : null}

@@ -49,14 +49,14 @@ export function buildCsvFiles(data: ExportData, now = new Date()): File[] {
 
   const habitColumns: (keyof Habit & string)[] = [
     'id', 'name', 'icon', 'color', 'type', 'target', 'unit', 'quick_step', 'frequency_type', 'frequency_days',
-    'frequency_times', 'frequency_interval', 'start_date', 'reminder_times', 'viz_type', 'viz_config',
+    'frequency_times', 'frequency_interval', 'start_date', 'reminder_times', 'health_metric', 'viz_type', 'viz_config',
     'sort_order', 'archived_at', 'created_at',
   ]
   const logs = data.habit_logs.map((l) => ({ ...l, habit_name: names.get(l.habit_id) ?? '' }))
 
   return [
     csv('habits', toCsv(data.habits, habitColumns)),
-    csv('habit-logs', toCsv(logs, ['log_date', 'habit_id', 'habit_name', 'value'])),
+    csv('habit-logs', toCsv(logs, ['log_date', 'habit_id', 'habit_name', 'value', 'health_value', 'manual'])),
     csv('todos', toCsv(data.todos, ['id', 'title', 'due_date', 'priority', 'started_at', 'completed_at', 'notes', 'created_at'])),
   ]
 }

@@ -1,5 +1,5 @@
 import type { CSSProperties } from 'react'
-import type { FrequencyType, HabitType, VizType } from './database.types'
+import type { FrequencyType, HabitType, HealthMetric, VizType } from './database.types'
 
 /** Palette keys stored in habits.color. Actual colors live in styles/tokens.css (light + dark). */
 export const HABIT_COLORS = [
@@ -53,4 +53,14 @@ export function formatNumber(value: number, lang: string): string {
 /** 0.856 → "86 %" (es) / "86%" (en). */
 export function formatPercent(value: number, lang: string): string {
   return new Intl.NumberFormat(lang, { style: 'percent', maximumFractionDigits: 0 }).format(value)
+}
+
+/** Health metrics a habit can be filled in from (phase 6), in the order the form shows them. */
+export const HEALTH_METRICS: HealthMetric[] = ['steps', 'sleep', 'workouts']
+
+/** Starting target, step of the ± buttons and icon when a habit switches to a Health metric. */
+export const HEALTH_DEFAULTS: Record<HealthMetric, { target: number; step: number; icon: string }> = {
+  steps: { target: 10000, step: 1000, icon: '🚶' },
+  sleep: { target: 7, step: 0.5, icon: '😴' },
+  workouts: { target: 1, step: 1, icon: '🏋️' },
 }

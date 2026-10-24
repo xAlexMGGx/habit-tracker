@@ -463,5 +463,110 @@
       "purpose": "Premiar la constancia reciente: lo que cuenta es cómo vas ahora, no lo que hiciste hace meses.",
       "ideal": "Hábitos sí/no o cuantitativos que quieres mantener vivos: practicar un instrumento, estudiar, regar las plantas."
     }
+  },
+  "health": {
+    "title": "Salud",
+    "hint": "Rellena solos tus hábitos de pasos, sueño y entrenamientos con los datos de la Fitbit que llegan a Salud, mediante un atajo de la app Atajos que se ejecuta cada día.",
+    "createKeyRow": "Crear clave para el atajo",
+    "guideRow": "Cómo crear el atajo",
+    "runNow": "Sincronizar ahora (abre Atajos)",
+    "loadFailed": "No se han podido cargar las claves. ¿Has ejecutado la migración de la fase 6?",
+    "keyTitle": "Clave para el atajo",
+    "keyIntro": "Se creará una clave personal que solo sirve para enviar datos de Salud a tus hábitos. Ponle el nombre del iPhone donde vas a crear el atajo.",
+    "keyName": "Nombre",
+    "defaultName": "iPhone",
+    "createKey": "Crear clave",
+    "creating": "Creando…",
+    "createFailed": "No se ha podido crear la clave. ¿Has ejecutado la migración de la fase 6?",
+    "copyNow": "Copia la clave ahora: por seguridad, no se volverá a mostrar. La pegarás en el atajo.",
+    "keyLabel": "Clave",
+    "urlLabel": "Dirección",
+    "copy": "Copiar",
+    "copied": "Copiado",
+    "copyFailed": "No se ha podido copiar. Mantén pulsado el texto y elige Seleccionar todo → Copiar.",
+    "nextGuide": "Ver cómo crear el atajo",
+    "closeConfirm": "¿Cerrar sin copiar la clave?",
+    "closeConfirmBody": "No se volverá a mostrar y tendrías que crear otra.",
+    "closeAnyway": "Cerrar",
+    "neverSynced": "Sin sincronizar todavía",
+    "lastSync": "Última sincronización {{when}}",
+    "summary": {
+      "steps": "{{value}} pasos",
+      "sleep": "{{value}} h de sueño",
+      "workouts_one": "{{count}} entrenamiento",
+      "workouts_other": "{{count}} entrenamientos"
+    },
+    "revoke": "Revocar",
+    "revokeConfirm": "¿Revocar «{{name}}»?",
+    "revokeConfirmBody": "El atajo que use esta clave dejará de funcionar.",
+    "revoked": "Clave revocada",
+    "metrics": {
+      "steps": "Pasos",
+      "sleep": "Sueño",
+      "workouts": "Entrenamientos"
+    },
+    "units": {
+      "steps": "pasos",
+      "sleep": "h",
+      "workouts": "entrenamientos"
+    },
+    "form": {
+      "source": "Fuente",
+      "manual": "Manual",
+      "health": "Salud",
+      "metric": "Métrica de Salud",
+      "manualHint": "Lo apuntas tú en la Agenda.",
+      "hint": {
+        "steps": "Pasos del día según Salud. Se rellena solo con el atajo de Ajustes → Salud.",
+        "sleep": "Horas dormidas según Salud; la noche cuenta para el día en que te despiertas. Se rellena solo con el atajo de Ajustes → Salud.",
+        "workouts": "Entrenamientos del día según Salud. Se rellena solo con el atajo de Ajustes → Salud."
+      }
+    },
+    "fromHealth": "Se rellena desde Salud",
+    "fromHealthDone": "Cumplido según Salud",
+    "byHand": "cambiado a mano",
+    "listTag": "❤️ Salud",
+    "manualNote": "Lo has cambiado a mano. Salud dice {{value}}.",
+    "manualNoData": "Lo has cambiado a mano. Aún no ha llegado ningún dato de Salud de este día.",
+    "fromHealthNote": "Este valor viene de Salud. Si lo cambias, se quedará el tuyo.",
+    "noDataYet": "Aún no ha llegado ningún dato de Salud de este día. Si lo pones a mano, se quedará el tuyo.",
+    "useHealthValue": "Usar el dato de Salud ({{value}})",
+    "clearManual": "Quitar mi valor y esperar a Salud",
+    "guide": {
+      "title": "Atajo de Salud",
+      "beforeTitle": "Antes de empezar",
+      "before": [
+        "Abre la app Salud → Explorar → Pasos y baja hasta «Fuentes de datos y acceso»: debe aparecer la app de Google de tu Fitbit. Mira también en «Sueño» y en «Entrenamientos».",
+        "Si el iPhone también cuenta tus pasos, en esa pantalla pulsa «Editar» y arrastra la app de la Fitbit arriba del todo, para que Salud no los cuente dos veces."
+      ],
+      "createTitle": "Crear el atajo (app Atajos)",
+      "create": [
+        "Pulsa + para crear un atajo nuevo. Toca su nombre, arriba, y llámalo exactamente `Habit tracker`.",
+        "Pasos: añade «Buscar muestras de salud» con los filtros «Tipo es Pasos» y «Fecha de inicio está en los últimos 4 días», y «Agrupar por: Día».",
+        "Añade «Repetir con cada» y, dentro, una acción «Texto» con `Fecha de inicio|Valor`: cada dato es una variable de «Elemento de repetición» (tócala y elige el dato), separadas por una barra vertical. En la fecha, elige el formato «ISO 8601» y activa «Incluir hora».",
+        "Después de «Fin de repetición», añade «Combinar texto» con «Resultados de repetición» y «Salto de línea».",
+        "Sueño: repite los pasos 2 a 4 con «Tipo es Análisis del sueño», sin agrupar, y el texto `Fecha de inicio|Fecha de finalización|Valor|Fuente` (las dos fechas en ISO 8601 con hora).",
+        "Entrenamientos: repite los pasos 2 a 4 con «Tipo es Entrenamientos», sin agrupar, y el texto `Fecha de inicio|Fuente`."
+      ],
+      "request": [
+        "Añade «Obtener contenido de URL» con la dirección de abajo. Pulsa «Mostrar más»: método `POST`; en «Cabeceras», añade `Authorization` con el valor `Bearer ` y tu clave detrás (con un espacio en medio); en «Cuerpo de la solicitud», elige «JSON» y añade tres campos de texto: `steps`, `sleep` y `workouts`. Como valor de cada uno, toca «Seleccionar variable» y elige su acción «Combinar texto».",
+        "Añade «Mostrar notificación» con «Contenido de la URL»: te dirá qué ha llegado."
+      ],
+      "testTitle": "Probarlo",
+      "test": [
+        "Pulsa ▶ en el atajo. La primera vez, iOS pedirá permiso para leer Pasos, Sueño y Entrenamientos y para conectarse a supabase.co: acepta (en la conexión, «Permitir siempre»).",
+        "Debe llegar una notificación como «Habit tracker ✓ Hoy: 8432 pasos · 7 h 15 min de sueño · 1 entrenamiento». Aquí, en Ajustes, verás la hora y los datos de la última sincronización."
+      ],
+      "automateTitle": "Que se ejecute solo",
+      "automate": [
+        "En Atajos → Automatización → + → «Hora del día»: 23:00, «Diariamente» y «Ejecutar inmediatamente». Pulsa «Siguiente» y elige `Habit tracker`.",
+        "Crea otra igual a las 9:00. Con el iPhone bloqueado, iOS no deja leer Salud y la de la noche puede fallar; como el atajo envía siempre los últimos días, la siguiente lo completa."
+      ],
+      "habitsTitle": "Tus hábitos",
+      "habits": [
+        "En Mis hábitos, crea o edita un hábito cuantitativo y, en «Fuente», elige «Salud» y la métrica. Se rellenará solo en cada sincronización.",
+        "Si cambias un día a mano, se queda tu valor. Para volver al de Salud, abre ese día y pulsa «Usar el dato de Salud»."
+      ]
+    }
   }
 }

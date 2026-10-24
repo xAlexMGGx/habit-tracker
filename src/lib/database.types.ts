@@ -11,6 +11,8 @@ export type AgendaSubtab = 'todos' | 'habits'
 export type Language = 'es' | 'en'
 /** Traffic light: high = red, medium = orange, low = green. */
 export type TodoPriority = 'high' | 'medium' | 'low'
+/** Apple Health metric that fills a habit (phase 6). */
+export type HealthMetric = 'steps' | 'sleep' | 'workouts'
 
 export type Database = {
   public: {
@@ -63,6 +65,7 @@ export type Database = {
           frequency_interval: number | null
           start_date: string
           reminder_times: string[]
+          health_metric: HealthMetric | null
           viz_type: VizType
           viz_config: Json
           sort_order: number
@@ -86,6 +89,7 @@ export type Database = {
           frequency_interval?: number | null
           start_date?: string
           reminder_times?: string[]
+          health_metric?: HealthMetric | null
           viz_type: VizType
           viz_config?: Json
           sort_order?: number
@@ -105,6 +109,7 @@ export type Database = {
           frequency_interval?: number | null
           start_date?: string
           reminder_times?: string[]
+          health_metric?: HealthMetric | null
           viz_type?: VizType
           viz_config?: Json
           sort_order?: number
@@ -118,6 +123,10 @@ export type Database = {
           user_id: string
           log_date: string
           value: number
+          /** Last value received from Health (phase 6). */
+          health_value: number | null
+          /** The user changed this day of a Health habit by hand. */
+          manual: boolean
           created_at: string
           updated_at: string
         }
@@ -126,9 +135,11 @@ export type Database = {
           user_id?: string
           log_date: string
           value: number
+          manual?: boolean
         }
         Update: {
           value?: number
+          manual?: boolean
         }
         Relationships: []
       }
@@ -195,6 +206,27 @@ export type Database = {
         }
         Relationships: []
       }
+      api_tokens: {
+        Row: {
+          id: string
+          user_id: string
+          name: string
+          token_hash: string
+          token_prefix: string
+          created_at: string
+          last_used_at: string | null
+          last_sync: Json | null
+        }
+        Insert: {
+          id?: string
+          user_id?: string
+          name: string
+          token_hash: string
+          token_prefix: string
+        }
+        Update: { [_ in never]: never }
+        Relationships: []
+      }
     }
     Views: { [_ in never]: never }
     Functions: {
@@ -214,3 +246,4 @@ export type HabitInsert = Database['public']['Tables']['habits']['Insert']
 export type HabitUpdate = Database['public']['Tables']['habits']['Update']
 export type HabitLog = Database['public']['Tables']['habit_logs']['Row']
 export type Todo = Database['public']['Tables']['todos']['Row']
+export type ApiToken = Database['public']['Tables']['api_tokens']['Row']

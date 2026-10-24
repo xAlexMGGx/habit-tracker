@@ -1,8 +1,8 @@
-import { Minus, Plus } from 'lucide-react'
+import { Heart, Minus, Plus } from 'lucide-react'
 import { type FormEvent, useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { BottomSheet } from '../../components/BottomSheet'
-import { useSetLogValue } from '../../data/logs'
+import { useHealthLogInfo, useRevertToHealth, useSetLogValue } from '../../data/logs'
 import type { Habit } from '../../lib/database.types'
 import type { DateStr } from '../../lib/dates'
 import { formatNumber } from '../../lib/habitMeta'
@@ -29,6 +29,8 @@ export function ValueSheet({ habit: openHabit, date, value, onClose }: Props) {
 
   const { t, i18n } = useTranslation()
   const setLog = useSetLogValue()
+  const revert = useRevertToHealth()
+  const healthInfo = useHealthLogInfo()
   const [text, setText] = useState('')
 
   useEffect(() => {
@@ -38,16 +40,34 @@ export function ValueSheet({ habit: openHabit, date, value, onClose }: Props) {
   if (!habit) return null
 
   const negative = habit.type === 'negative'
+  const health = habit.health_metric != null
+  const info = health ? healthInfo(habit.id, date) : undefined
   const step = negative ? 1 : habit.quick_step
   const current = parse(text)
   const bump = (delta: number) => setText(String(Math.max(0, Math.round((current + delta) * 100) / 100)))
+  const amount = (n: number) => `${formatNumber(n, i18n.language)} ${habit.unit ?? ''}`.trim()
 
   const submit = (e: FormEvent) => {
     e.preventDefault()
     const next = negative ? Math.round(current) : current
-    if (next !== value) setLog.mutate({ habitId: habit.id, date, value: next })
+    if (next !== value) setLog.mutate({ habitId: habit.id, date, value: next, health })
     onClose()
   }
+
+  const useHealthValue = () => {
+    revert.mutate({ habitId: habit.id, date, healthValue: info?.health_value ?? null })
+    onClose()
+  }
+
+  const healthNote = !health
+    ? null
+    : info?.manual
+      ? info.health_value != null
+        ? t('health.manualNote', { value: amount(info.health_value) })
+        : t('health.manualNoData')
+      : info?.health_value != null
+        ? t('health.fromHealthNote')
+        : t('health.noDataYet')
 
   return (
     <BottomSheet
@@ -79,10 +99,23 @@ export function ValueSheet({ habit: openHabit, date, value, onClose }: Props) {
             <Plus size={22} />
           </button>
         </div>
+        {healthNote ? (
+          <p className={s.healthNote}>
+            <Heart size={14} fill="currentColor" strokeWidth={0} className={s.healthHeart} />
+            {healthNote}
+          </p>
+        ) : null}
         <div className={s.sheetActions}>
           <button type="submit" className={ui.btnBlock}>
             {t('common.save')}
           </button>
+          {info?.manual ? (
+            <button type="button" className={ui.btnSecondary} onClick={useHealthValue}>
+              {info.health_value != null
+                ? t('health.useHealthValue', { value: amount(info.health_value) })
+                : t('health.clearManual')}
+            </button>
+          ) : null}
         </div>
       </form>
     </BottomSheet>

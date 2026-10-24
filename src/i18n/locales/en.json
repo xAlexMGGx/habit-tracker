@@ -463,5 +463,110 @@
       "purpose": "Reward recent consistency: what counts is how you’re doing now, not months ago.",
       "ideal": "Yes/no or quantitative habits you want to keep alive: practicing an instrument, studying, watering the plants."
     }
+  },
+  "health": {
+    "title": "Health",
+    "hint": "Fills in your steps, sleep and workout habits by themselves with the Fitbit data that reaches Apple Health, through a Shortcuts shortcut that runs every day.",
+    "createKeyRow": "Create a key for the shortcut",
+    "guideRow": "How to build the shortcut",
+    "runNow": "Sync now (opens Shortcuts)",
+    "loadFailed": "Couldn't load your keys. Have you run the phase 6 migration?",
+    "keyTitle": "Key for the shortcut",
+    "keyIntro": "This creates a personal key that can only send Health data to your habits. Name it after the iPhone where you’ll build the shortcut.",
+    "keyName": "Name",
+    "defaultName": "iPhone",
+    "createKey": "Create key",
+    "creating": "Creating…",
+    "createFailed": "Couldn't create the key. Have you run the phase 6 migration?",
+    "copyNow": "Copy the key now: for security, it won't be shown again. You'll paste it into the shortcut.",
+    "keyLabel": "Key",
+    "urlLabel": "Address",
+    "copy": "Copy",
+    "copied": "Copied",
+    "copyFailed": "Couldn't copy. Press and hold the text and choose Select All → Copy.",
+    "nextGuide": "See how to build the shortcut",
+    "closeConfirm": "Close without copying the key?",
+    "closeConfirmBody": "It won't be shown again and you'd have to create another one.",
+    "closeAnyway": "Close",
+    "neverSynced": "Not synced yet",
+    "lastSync": "Last sync {{when}}",
+    "summary": {
+      "steps": "{{value}} steps",
+      "sleep": "{{value}} h of sleep",
+      "workouts_one": "{{count}} workout",
+      "workouts_other": "{{count}} workouts"
+    },
+    "revoke": "Revoke",
+    "revokeConfirm": "Revoke “{{name}}”?",
+    "revokeConfirmBody": "The shortcut using this key will stop working.",
+    "revoked": "Key revoked",
+    "metrics": {
+      "steps": "Steps",
+      "sleep": "Sleep",
+      "workouts": "Workouts"
+    },
+    "units": {
+      "steps": "steps",
+      "sleep": "h",
+      "workouts": "workouts"
+    },
+    "form": {
+      "source": "Source",
+      "manual": "Manual",
+      "health": "Health",
+      "metric": "Health metric",
+      "manualHint": "You log it in the Agenda.",
+      "hint": {
+        "steps": "The day's steps according to Health. Filled in by the shortcut in Settings → Health.",
+        "sleep": "Hours asleep according to Health; a night counts for the day you wake up. Filled in by the shortcut in Settings → Health.",
+        "workouts": "The day's workouts according to Health. Filled in by the shortcut in Settings → Health."
+      }
+    },
+    "fromHealth": "Filled in from Health",
+    "fromHealthDone": "Done according to Health",
+    "byHand": "changed by hand",
+    "listTag": "❤️ Health",
+    "manualNote": "You changed it by hand. Health says {{value}}.",
+    "manualNoData": "You changed it by hand. No Health data for this day yet.",
+    "fromHealthNote": "This value comes from Health. If you change it, yours stays.",
+    "noDataYet": "No Health data for this day yet. If you enter it by hand, yours stays.",
+    "useHealthValue": "Use the Health value ({{value}})",
+    "clearManual": "Remove my value and wait for Health",
+    "guide": {
+      "title": "Health shortcut",
+      "beforeTitle": "Before you start",
+      "before": [
+        "Open the Health app → Browse → Steps and scroll down to “Data Sources & Access”: your Fitbit’s Google app should be there. Check “Sleep” and “Workouts” too.",
+        "If your iPhone also counts steps, tap “Edit” on that screen and drag the Fitbit app to the top, so Health doesn’t count them twice."
+      ],
+      "createTitle": "Build the shortcut (Shortcuts app)",
+      "create": [
+        "Tap + to create a new shortcut. Tap its name at the top and call it exactly `Habit tracker`.",
+        "Steps: add “Find Health Samples” with the filters “Type is Steps” and “Start Date is in the last 4 days”, and “Group By: Day”.",
+        "Add “Repeat with Each” and, inside it, a “Text” action with `Start Date|Value`: each one is a variable from “Repeat Item” (tap it and pick the detail), separated by a vertical bar. For the date, pick the “ISO 8601” format and turn on “Include ISO 8601 Time”.",
+        "After “End Repeat”, add “Combine Text” with “Repeat Results” and “New Lines”.",
+        "Sleep: repeat steps 2 to 4 with “Type is Sleep Analysis”, not grouped, and the text `Start Date|End Date|Value|Source` (both dates in ISO 8601 with time).",
+        "Workouts: repeat steps 2 to 4 with “Type is Workouts”, not grouped, and the text `Start Date|Source`."
+      ],
+      "request": [
+        "Add “Get Contents of URL” with the address below. Tap “Show More”: method `POST`; under “Headers”, add `Authorization` with the value `Bearer ` followed by your key (with a space in between); under “Request Body”, choose “JSON” and add three text fields: `steps`, `sleep` and `workouts`. For each value, tap “Select Variable” and pick its “Combine Text” action.",
+        "Add “Show Notification” with “Contents of URL”: it tells you what arrived."
+      ],
+      "testTitle": "Try it",
+      "test": [
+        "Tap ▶ in the shortcut. The first time, iOS asks to read Steps, Sleep and Workouts and to connect to supabase.co: allow it (for the connection, “Always Allow”).",
+        "You should get a notification like “Habit tracker ✓ Today: 8,432 steps · 7 h 15 min of sleep · 1 workout”. Here in Settings you’ll see the time and data of the last sync."
+      ],
+      "automateTitle": "Make it run by itself",
+      "automate": [
+        "In Shortcuts → Automation → + → “Time of Day”: 23:00, “Daily” and “Run Immediately”. Tap “Next” and choose `Habit tracker`.",
+        "Create another one at 9:00. While the iPhone is locked, iOS doesn’t let shortcuts read Health and the night run may fail; since the shortcut always sends the last few days, the next run fills it in."
+      ],
+      "habitsTitle": "Your habits",
+      "habits": [
+        "In My habits, create or edit a quantitative habit and under “Source” choose “Health” and the metric. It fills itself in on every sync.",
+        "If you change a day by hand, your value stays. To go back to Health’s, open that day and tap “Use the Health value”."
+      ]
+    }
   }
 }

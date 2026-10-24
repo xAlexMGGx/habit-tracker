@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router'
 import { HabitQuickAction } from '../../components/HabitQuickAction'
 import { HabitIcon } from '../../components/controls'
+import { useHealthLogInfo } from '../../data/logs'
 import type { Habit } from '../../lib/database.types'
 import type { DateStr } from '../../lib/dates'
 import { formatNumber, habitColorStyle } from '../../lib/habitMeta'
@@ -14,12 +15,14 @@ type RowProps = {
   habit: Habit
   date: DateStr
   value: number
+  /** A Health habit's day that the user changed by hand. */
+  manual: boolean
   editable: boolean
   week?: { done: number; goal: number }
   onOpenValue: (habit: Habit) => void
 }
 
-function HabitRow({ habit, date, value, editable, week, onOpenValue }: RowProps) {
+function HabitRow({ habit, date, value, manual, editable, week, onOpenValue }: RowProps) {
   const { t, i18n } = useTranslation()
   const done = isCompletedValue(habit, value)
   const num = (n: number) => formatNumber(n, i18n.language)
@@ -35,6 +38,7 @@ function HabitRow({ habit, date, value, editable, week, onOpenValue }: RowProps)
   }
 
   const weekText = week ? t('agenda.weekProgress', week) : null
+  const manualText = manual ? t('health.byHand') : null
   const canOpen = editable && habit.type !== 'boolean'
 
   return (
@@ -48,7 +52,7 @@ function HabitRow({ habit, date, value, editable, week, onOpenValue }: RowProps)
         <span className={s.habitName}>{habit.name}</span>
         {detail || weekText ? (
           <span className={`${s.habitDetail} ${habit.type === 'negative' && value > 0 ? ui.danger : ''}`}>
-            {[detail, weekText].filter(Boolean).join(' · ')}
+            {[detail, weekText, manualText].filter(Boolean).join(' · ')}
           </span>
         ) : null}
         {progress != null ? (
@@ -74,6 +78,7 @@ type ViewProps = {
 
 export function HabitsView({ date, due, optional, index, editable, hasAnyHabit, onOpenValue }: ViewProps) {
   const { t } = useTranslation()
+  const healthInfo = useHealthLogInfo()
 
   const row = (habit: Habit) => {
     const logs = logsFor(index, habit.id)
@@ -83,6 +88,7 @@ export function HabitsView({ date, due, optional, index, editable, hasAnyHabit, 
         habit={habit}
         date={date}
         value={logs.get(date) ?? 0}
+        manual={habit.health_metric != null && healthInfo(habit.id, date)?.manual === true}
         editable={editable}
         week={habit.frequency_type === 'times_per_week' ? weekProgress(habit, date, logs) : undefined}
         onOpenValue={onOpenValue}

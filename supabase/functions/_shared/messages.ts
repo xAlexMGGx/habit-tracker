@@ -19,3 +19,36 @@ export function messages(lang: Lang) {
     testBody: es ? '¡Las notificaciones funcionan! 🎉' : 'Notifications are working! 🎉',
   }
 }
+
+/** Shown when the key can't be checked, so the user's language isn't known yet. */
+export const INVALID_KEY_TEXT =
+  'Habit tracker: la clave no es válida o se ha revocado. Crea otra en Ajustes → Salud. / ' +
+  'The key is invalid or was revoked. Create a new one in Settings → Health.'
+
+/** Replies of the `health` function. The shortcut shows them as a notification. */
+export function healthTexts(lang: Lang) {
+  const es = lang === 'es'
+  const num = (n: number) => new Intl.NumberFormat(lang, { maximumFractionDigits: 2 }).format(n)
+  return {
+    noHabits: es
+      ? 'Habit tracker: no tienes hábitos que usen Salud. Créalos en Mis hábitos (cuantitativo, fuente Salud).'
+      : 'Habit tracker: none of your habits use Health. Set one up in My habits (quantitative, source Health).',
+    noData: es
+      ? 'Habit tracker: no ha llegado ningún dato de Salud de estos días. ¿Tiene Atajos permiso para leer Salud?'
+      : 'Habit tracker: no Health data arrived for these days. Does Shortcuts have access to Health?',
+    today: es ? 'Hoy' : 'Today',
+    yesterday: es ? 'Ayer' : 'Yesterday',
+    steps: (n: number) => (es ? `${num(n)} pasos` : `${num(n)} steps`),
+    sleep: (hours: number) => {
+      const h = Math.floor(hours)
+      const min = Math.round((hours - h) * 60)
+      const time = min ? `${h} h ${min} min` : `${h} h`
+      return es ? `${time} de sueño` : `${time} of sleep`
+    },
+    workouts: (n: number) =>
+      es ? (n === 1 ? '1 entrenamiento' : `${n} entrenamientos`) : n === 1 ? '1 workout' : `${n} workouts`,
+    noTime: es
+      ? '⚠️ Las fechas del sueño no llevan hora: en el atajo, activa «Incluir hora» en el formato ISO 8601.'
+      : '⚠️ Sleep dates have no time: in the shortcut, turn on “Include ISO 8601 Time”.',
+  }
+}

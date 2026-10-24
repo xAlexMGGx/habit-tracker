@@ -211,7 +211,23 @@
 }
 
 .sheetActions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
   padding: 0 var(--gutter);
+}
+
+/* Value sheet of a Health habit: where the value comes from */
+.healthNote {
+  margin: 0 calc(var(--gutter) + 4px) 16px;
+  font-size: 14px;
+  color: var(--text-2);
+}
+
+.healthHeart {
+  margin-right: 6px;
+  vertical-align: -1px;
+  color: var(--danger);
 }
 
 .quickAdd {

@@ -244,3 +244,9 @@
 .addLabel {
   color: var(--accent);
 }
+
+.sourceControls {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}

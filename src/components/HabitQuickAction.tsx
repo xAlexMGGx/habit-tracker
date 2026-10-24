@@ -1,4 +1,4 @@
-import { Ban, Check } from 'lucide-react'
+import { Ban, Check, Heart } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { useSetLogValue } from '../data/logs'
 import type { Habit } from '../lib/database.types'
@@ -17,13 +17,31 @@ type Props = {
   compact?: boolean
 }
 
-/** One-tap logging: check (yes/no), "+N" (quantitative) or relapse with undo (negative). */
+/**
+ * One-tap logging: check (yes/no), "+N" (quantitative) or relapse with undo (negative).
+ * Habits filled in from Health get a heart instead: their value comes from the sync, and
+ * changing it by hand is a deliberate step in the value sheet.
+ */
 export function HabitQuickAction({ habit, date, value, disabled, compact }: Props) {
   const { t, i18n } = useTranslation()
   const setLog = useSetLogValue()
   const done = isCompletedValue(habit, value)
   const set = (next: number) => setLog.mutate({ habitId: habit.id, date, value: next })
   const size = compact ? s.compact : ''
+
+  if (habit.health_metric) {
+    return (
+      <span
+        className={`${s.pill} ${s.health} ${done ? s.pillDone : ''} ${size}`}
+        style={habitColorStyle(habit.color)}
+        role="img"
+        aria-label={done ? t('health.fromHealthDone') : t('health.fromHealth')}
+      >
+        <Heart size={compact ? 15 : 16} fill="currentColor" strokeWidth={0} />
+        {done ? <Check size={compact ? 14 : 16} strokeWidth={3} /> : null}
+      </span>
+    )
+  }
 
   switch (habit.type) {
     case 'boolean':

@@ -99,6 +99,41 @@ Complementa a [SPEC.md](../SPEC.md). Cada punto se acordó con el usuario o es u
 - **Al tocar una notificación** se abre la Agenda (la de prueba abre Ajustes).
 - **Textos de las notificaciones:** en `supabase/functions/_shared/messages.ts` (ES/EN), en el idioma de la cuenta.
 
+## Widget (fase 5): descartado
+
+- En iOS, una PWA no puede tener widgets: solo las apps nativas. La única forma sin Mac era Scriptable, y se descartó por tener que instalar una app (2026-10-23). Se quitó todo lo hecho.
+
+## Salud (fase 6)
+
+- **Cadena:** Fitbit → app de Google → Salud → atajo de Atajos (automatización a las 23:00 y a las 9:00) → Edge Function `health` → `habit_logs`.
+- **El atajo se crea a mano** siguiendo la guía de Ajustes → Salud: los atajos solo se pueden instalar con un toque si están firmados desde un iPhone o un Mac. Una vez hecho, se puede compartir por enlace de iCloud.
+- **Claves personales (`api_tokens`):**
+  - La clave (`ht_` + 32 bytes aleatorios) se genera en el iPhone. En la base de datos solo se guardan su hash SHA-256 y los 8 primeros caracteres, para reconocerla en la lista.
+  - Solo se muestra una vez. Si se cierra la hoja sin copiarla, la app pregunta antes.
+  - Solo sirve para enviar datos de Salud: no permite leer nada. Se revoca desde Ajustes (se borra la fila).
+  - Cada clave guarda la hora y los datos de su última sincronización (`last_sync`), que se ven en Ajustes.
+- **Qué envía el atajo:** un texto por métrica, una línea por muestra de Salud, con las fechas en ISO 8601 (formato en `_shared/health.ts`). Los cálculos los hace el servidor, para poder corregirlos sin rehacer el atajo.
+  - Envía 4 días, pero solo se escriben **hoy y los 2 anteriores**: así el primero, que puede estar a medias, no cuenta.
+  - Los números se aceptan como los escribe el iPhone en español o en inglés ("8.432", "7,5").
+  - Si dos fuentes cuentan lo mismo (iPhone y Fitbit), se toma la mayor, no la suma.
+- **Métricas** (elegidas: solo las tres del SPEC):
+  - **Pasos:** total del día.
+  - **Sueño:** horas dormidas, sin contar «en cama» ni «despierto»; los tramos que se solapan se cuentan una vez. **La noche cuenta para el día en que te despiertas**: un tramo que termina a partir de las 18:00 ya es de la noche siguiente; una siesta antes de las 18:00 cuenta ese día.
+  - **Entrenamientos:** número de entrenamientos del día.
+- **Hábitos de Salud: cuantitativos con cifra y meta** (elegido), p. ej. «8432/10.000 pasos», con todas las visualizaciones.
+  - En el formulario, «Fuente: Manual / Salud» solo aparece en los cuantitativos. La unidad la pone la app y la meta empieza en 10.000 pasos, 7 h o 1 entrenamiento.
+  - Un hábito existente se puede pasar a Salud y conserva su historial. Las 3 últimas fechas se sobrescriben con lo que diga Salud, salvo las cambiadas a mano.
+  - Se rellenan los días en que el hábito toca según su plan; en «X veces por semana», todos los días.
+  - En lugar del botón «+N» llevan un ❤️, que se pone del color del hábito con ✓ cuando se cumple. Cambiar el valor a mano se hace a propósito, en la hoja del día.
+- **Cambios a mano: manda el valor manual** (elegido), con un botón para volver al de Salud.
+  - `habit_logs.manual` marca el día y `health_value` guarda lo último que llegó de Salud. La sincronización actualiza `health_value`, pero no toca `value` mientras el día sea manual.
+  - En la Agenda pone «cambiado a mano». La hoja del día dice qué dice Salud y ofrece «Usar el dato de Salud» o, si aún no ha llegado nada, «Quitar mi valor y esperar a Salud».
+  - Un 0 puesto a mano se guarda como fila (no se borra), para que la sincronización no lo rellene.
+- **Sincronizar ahora:** Ajustes → Salud abre el atajo `Habit tracker` (`shortcuts://run-shortcut`). Al volver, la app recarga los datos.
+- **Limitaciones:**
+  - No es en tiempo real: los datos llegan cuando se ejecuta el atajo.
+  - Con el iPhone bloqueado, iOS no deja leer Salud y la automatización puede fallar. Por eso hay dos automatizaciones y se envían varios días.
+
 ## Seguimiento (fase 2)
 
 - **Tarjetas:** una por hábito activo, incluidos los que hoy no tocan, que muestran "Hoy no toca".

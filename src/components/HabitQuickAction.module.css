@@ -78,3 +78,9 @@
   padding: 0 10px;
   font-size: 14px;
 }
+
+/* Health habits: a badge, not a button */
+.health {
+  min-width: 40px;
+  padding: 0 10px;
+}

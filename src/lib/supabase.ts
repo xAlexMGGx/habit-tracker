@@ -6,6 +6,9 @@ const key = import.meta.env.VITE_SUPABASE_ANON_KEY as string | undefined
 
 export const isSupabaseConfigured = Boolean(url && key)
 
+/** Base URL of Edge Functions (the Atajos shortcut calls them directly). */
+export const functionsUrl = `${url ?? ''}/functions/v1`
+
 function isSecretKey(k: string): boolean {
   if (k.startsWith('sb_secret_')) return true
   const payload = k.split('.')[1]

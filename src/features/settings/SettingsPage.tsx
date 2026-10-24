@@ -20,6 +20,7 @@ import { showToast } from '../../lib/toast'
 import ui from '../../styles/ui.module.css'
 import { disableFaceIdLock, enableFaceIdLock, isFaceIdAvailable, useFaceIdLockEnabled } from '../lock/appLock'
 import { InstallGuide } from '../welcome/InstallGuide'
+import { HealthSection } from './HealthSection'
 import s from './Settings.module.css'
 
 const MIN_PASSWORD = 8
@@ -337,6 +338,8 @@ export function SettingsPage() {
         </div>
         <p className={ui.sectionFooter}>{t('settings.appearanceHint')}</p>
       </div>
+
+      <HealthSection />
 
       <ExportSection />
 

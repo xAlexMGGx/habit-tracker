@@ -26,34 +26,79 @@ export function useLogIndex(): LogIndex {
   return useMemo(() => buildLogIndex(data ?? []), [data])
 }
 
-type SetLog = { habitId: string; date: DateStr; value: number }
+/** What Health sent for a day and whether the user changed it by hand (phase 6). */
+export type HealthLogInfo = Pick<HabitLog, 'health_value' | 'manual'>
 
-/** Sets a habit's value for a day. 0 deletes the row. Writes run one after another so fast taps never race. */
-export function useSetLogValue() {
+const healthKey = (habitId: string, date: DateStr) => `${habitId}|${date}`
+
+/** Health info of the days that have any, by "habitId|date". */
+export function useHealthLogInfo(): (habitId: string, date: DateStr) => HealthLogInfo | undefined {
+  const { data } = useHabitLogs()
+  const map = useMemo(() => {
+    const m = new Map<string, HealthLogInfo>()
+    for (const l of data ?? []) {
+      if (l.manual || l.health_value != null) m.set(healthKey(l.habit_id, l.log_date), l)
+    }
+    return m
+  }, [data])
+  return (habitId, date) => map.get(healthKey(habitId, date))
+}
+
+type SetLog = {
+  habitId: string
+  date: DateStr
+  value: number
+  /**
+   * The habit is filled in from Health: the value is marked as set by hand, so the sync
+   * leaves it alone, and 0 is kept as a row instead of deleting it.
+   */
+  health?: boolean
+}
+
+type LogWrite =
+  | { habitId: string; date: DateStr; value: number; manual?: boolean }
+  | { habitId: string; date: DateStr; remove: true }
+
+async function writeLog(w: LogWrite) {
+  const { error } =
+    'remove' in w
+      ? await supabase.from('habit_logs').delete().eq('habit_id', w.habitId).eq('log_date', w.date)
+      : await supabase.from('habit_logs').upsert(
+          // `manual` only goes out for Health habits, so other habits work the same as before phase 6.
+          { habit_id: w.habitId, log_date: w.date, value: w.value, ...(w.manual != null ? { manual: w.manual } : {}) },
+          { onConflict: 'habit_id,log_date' },
+        )
+  if (error) throw error
+}
+
+/** Shared optimistic update for the two mutations below. Writes run one after another so fast taps never race. */
+function useLogMutation<V>(toWrite: (vars: V) => LogWrite) {
   const qc = useQueryClient()
   return useMutation({
     mutationKey: ['habit_logs'],
     scope: { id: 'habit_logs' },
-    mutationFn: async ({ habitId, date, value }: SetLog) => {
-      const { error } =
-        value > 0
-          ? await supabase
-              .from('habit_logs')
-              .upsert({ habit_id: habitId, log_date: date, value }, { onConflict: 'habit_id,log_date' })
-          : await supabase.from('habit_logs').delete().eq('habit_id', habitId).eq('log_date', date)
-      if (error) throw error
-    },
-    onMutate: async ({ habitId, date, value }) => {
+    mutationFn: (vars: V) => writeLog(toWrite(vars)),
+    onMutate: async (vars) => {
       await qc.cancelQueries({ queryKey: KEY })
       const prev = qc.getQueryData<HabitLog[]>(KEY)
+      const w = toWrite(vars)
       qc.setQueryData<HabitLog[]>(KEY, (list = []) => {
-        const rest = list.filter((l) => !(l.habit_id === habitId && l.log_date === date))
-        if (value <= 0) return rest
-        const old = list.find((l) => l.habit_id === habitId && l.log_date === date)
+        const old = list.find((l) => l.habit_id === w.habitId && l.log_date === w.date)
+        const rest = list.filter((l) => l !== old)
+        if ('remove' in w) return rest
         const now = new Date().toISOString()
         return [
           ...rest,
-          { habit_id: habitId, log_date: date, value, user_id: old?.user_id ?? '', created_at: old?.created_at ?? now, updated_at: now },
+          {
+            habit_id: w.habitId,
+            log_date: w.date,
+            value: w.value,
+            manual: w.manual ?? old?.manual ?? false,
+            health_value: old?.health_value ?? null,
+            user_id: old?.user_id ?? '',
+            created_at: old?.created_at ?? now,
+            updated_at: now,
+          },
         ]
       })
       return { prev }
@@ -62,4 +107,24 @@ export function useSetLogValue() {
       if (ctx?.prev) qc.setQueryData(KEY, ctx.prev)
     },
   })
+}
+
+/** Sets a habit's value for a day. 0 deletes the row (except on Health habits, see `health`). */
+export function useSetLogValue() {
+  return useLogMutation<SetLog>(({ habitId, date, value, health }) =>
+    health
+      ? { habitId, date, value: Math.max(0, value), manual: true }
+      : value > 0
+        ? { habitId, date, value }
+        : { habitId, date, remove: true },
+  )
+}
+
+type UseHealth = { habitId: string; date: DateStr; healthValue: number | null }
+
+/** Drops a manual value of a Health habit: back to what Health sent, or empty until the next sync. */
+export function useRevertToHealth() {
+  return useLogMutation<UseHealth>(({ habitId, date, healthValue }) =>
+    healthValue ? { habitId, date, value: healthValue, manual: false } : { habitId, date, remove: true },
+  )
 }

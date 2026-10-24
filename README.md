@@ -46,6 +46,7 @@ Cuando haya migraciones nuevas en fases posteriores, ejecuta solo los ficheros n
 | `20261020000000_init.sql` | Tablas, RLS y funciones base (fase 1) |
 | `20261022000000_todo_details.sql` | Prioridad (semáforo), "en progreso" y notas en las tareas |
 | `20261023000000_push.sql` | Suscripciones push y registro de recordatorios enviados (fase 4, ver paso 9) |
+| `20261024000000_health.sql` | Claves personales y hábitos rellenados desde Salud (fase 6, ver paso 10) |
 
 ### Opción B — Supabase CLI
 
@@ -287,6 +288,72 @@ Las notificaciones son **por dispositivo**: actívalas en cada iPhone. Al cerrar
 
 ---
 
+## 10. Salud / Fitbit (fase 6)
+
+Los hábitos de **pasos**, **sueño** y **entrenamientos** se rellenan solos con los datos de la Fitbit:
+
+Fitbit → app de Google → **Salud** del iPhone → **un atajo de Atajos** (cada día, solo) → Edge Function `health` → hábitos.
+
+El atajo lee Salud y envía los datos de los últimos días con una **clave personal** que solo sirve para eso. En la base de datos solo se guarda el *hash* de la clave, y puedes revocarla desde Ajustes. De los datos de Salud solo se guarda el total de cada día en los hábitos que lo usan.
+
+### 10.1 Comprueba que los datos llegan a Salud
+
+En el iPhone: **Salud → Explorar → Pasos → Fuentes de datos y acceso**. Tiene que aparecer la app de Google de tu Fitbit. Mira también **Sueño** y **Entrenamientos**. Si no aparece, el resto no puede funcionar: actívalo primero en la app de Google.
+
+Si el iPhone también cuenta pasos, en esa pantalla pulsa **Editar** y pon la Fitbit la primera, para que Salud no los cuente dos veces.
+
+### 10.2 Migración
+
+En el **SQL Editor**, ejecuta [supabase/migrations/20261024000000_health.sql](supabase/migrations/20261024000000_health.sql). Hazlo **antes** de subir la app nueva.
+
+### 10.3 Desplegar la función
+
+Con la CLI ya conectada (paso 9.3):
+
+```bash
+npx supabase functions deploy health --no-verify-jwt --use-api
+```
+
+No necesita secretos nuevos. `--no-verify-jwt` es necesario porque el atajo no inicia sesión: la función comprueba ella misma la clave personal.
+
+### 10.4 Desplegar la app y crear la clave
+
+1. Haz push a `main` para desplegar la app.
+2. En el iPhone: **Ajustes → Salud → Crear clave para el atajo**. Ponle un nombre, pulsa **Crear clave** y **Copiar**. Por seguridad no se vuelve a mostrar: si la pierdes, revócala y crea otra.
+
+### 10.5 Crear el atajo
+
+Sigue **Ajustes → Salud → Cómo crear el atajo**, que tiene los pasos completos y la dirección para copiar. En resumen, en la app **Atajos** creas un atajo llamado `Habit tracker` que:
+
+1. Busca en Salud los **pasos** (agrupados por día), el **análisis del sueño** y los **entrenamientos** de los últimos 4 días.
+2. Convierte cada muestra en una línea de texto con sus fechas en ISO 8601 con hora:
+   - pasos: `Fecha de inicio|Valor`
+   - sueño: `Fecha de inicio|Fecha de finalización|Valor|Fuente`
+   - entrenamientos: `Fecha de inicio|Fuente`
+3. Hace un `POST` a `https://TU-REF.supabase.co/functions/v1/health` con la cabecera `Authorization: Bearer ht_…` y un JSON con los campos de texto `steps`, `sleep` y `workouts`.
+4. Muestra la respuesta como notificación (p. ej. *Habit tracker ✓ Hoy: 8432 pasos · 7 h 15 min de sueño · 1 entrenamiento*).
+
+Ejecútalo una vez a mano con ▶: iOS pedirá permiso para leer Salud y para conectarse a `supabase.co` (elige **Permitir siempre**).
+
+> Las otras personas pueden hacer lo mismo con su propia clave. También puedes compartir tu atajo por enlace de iCloud, y cada persona cambia la clave por la suya.
+
+### 10.6 Que se ejecute solo
+
+**Atajos → Automatización → + → Hora del día**: 23:00, **Diariamente**, **Ejecutar inmediatamente** → **Siguiente** → `Habit tracker`. Crea otra igual a las **9:00**.
+
+Hacen falta las dos porque iOS no deja leer Salud con el iPhone bloqueado, así que la de la noche puede fallar. Como el atajo envía siempre los últimos días, la siguiente ejecución lo completa. Para sincronizar en cualquier momento: **Ajustes → Salud → Sincronizar ahora**, o ejecuta el atajo.
+
+### 10.7 Tus hábitos
+
+En **Mis hábitos**, crea o edita un hábito **cuantitativo** y en **Fuente** elige **Salud** y la métrica. La unidad la pone la app (pasos, h, entrenamientos) y la meta empieza en 10.000 pasos, 7 h o 1 entrenamiento. Puedes convertir un hábito que ya tengas y conserva su historial.
+
+- Los hábitos de Salud llevan un ❤️ en vez del botón «+N».
+- Si cambias un día a mano, **se queda tu valor**. Para volver al de Salud, abre ese día y pulsa **Usar el dato de Salud**.
+- El sueño de una noche cuenta para el **día en que te despiertas**.
+- Solo se rellenan los días en que el hábito toca (en los de «X veces por semana», cualquier día).
+
+---
+
 ## Estructura del proyecto
 
 ```
@@ -294,7 +361,8 @@ Las notificaciones son **por dispositivo**: actívalas en cada iPhone. Al cerrar
 supabase/migrations/           Esquema SQL, RLS y funciones
 supabase/functions/
   send-reminders/              Edge Function que envía las notificaciones
-  _shared/                     Lógica común con la app (fechas, frecuencias, qué recordar)
+  health/                      Edge Function que recibe los datos de Salud del atajo
+  _shared/                     Lógica común con la app (fechas, frecuencias, qué recordar, Salud)
 supabase/sql/                  SQL que se ejecuta a mano una vez (cron de recordatorios)
 public/                        Iconos de la app (generados desde icon.svg)
 src/
@@ -307,7 +375,7 @@ src/
     agenda/                    Tira de días, to-dos, pendientes y marcado de hábitos
     habits/                    Mis hábitos: lista, reordenar, archivar, formulario
     tracker/                   Seguimiento (fase 2)
-    settings/                  Ajustes
+    settings/                  Ajustes (y la guía del atajo de Salud)
     lock/                      Bloqueo con Face ID
     welcome/                   Guía de instalación
   sw.ts                        Service worker
@@ -344,3 +412,10 @@ src/
 
   Un `401` significa que el `CRON_SECRET` del Vault no coincide con el de la función. Comprueba también la zona horaria: se toma del iPhone cada vez que abres la app.
 - **Cambias las claves VAPID** → en cada dispositivo, desactiva y vuelve a activar las notificaciones.
+- **"No se ha podido crear la clave"** en Ajustes → Salud → falta la migración del paso 10.2.
+- **El atajo da error en «Obtener contenido de URL»** → si es un 404, la función `health` no está desplegada (paso 10.3). Revisa también la dirección.
+- **La notificación dice que la clave no es válida** → se ha revocado o está mal copiada. La cabecera debe ser exactamente `Authorization` con el valor `Bearer ht_…` (con un espacio después de `Bearer`).
+- **"No ha llegado ningún dato de Salud"** → Atajos no tiene permiso para leer Salud: en el iPhone, **Ajustes → Privacidad y seguridad → Salud → Atajos** y activa Pasos, Sueño y Entrenamientos. Comprueba también el paso 10.1.
+- **"Las fechas del sueño no llevan hora"** → en el atajo, en las fechas del sueño, activa «Incluir hora» del formato ISO 8601.
+- **Los pasos salen dobles** → en Salud, pon la Fitbit la primera en las fuentes de datos de Pasos (paso 10.1).
+- **La automatización de la noche no ha funcionado** → es normal si el iPhone estaba bloqueado; la de la mañana lo completa. En Supabase, **Edge Functions → health → Logs** muestra cuántas líneas llegaron en cada sincronización.
