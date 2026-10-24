@@ -7,6 +7,7 @@ import { formatNumber, habitColorStyle } from '../lib/habitMeta'
 import { isCompletedValue } from '../lib/schedule'
 import { showToast } from '../lib/toast'
 import s from './HabitQuickAction.module.css'
+import { useHealthSync } from './useHealthSync'
 
 type Props = {
   habit: Habit
@@ -19,27 +20,30 @@ type Props = {
 
 /**
  * One-tap logging: check (yes/no), "+N" (quantitative) or relapse with undo (negative).
- * Habits filled in from Health get a heart instead: their value comes from the sync, and
- * changing it by hand is a deliberate step in the value sheet.
+ * Habits filled in from Health get a heart instead, which syncs with Health: their value
+ * comes from the sync, and changing it by hand is a deliberate step in the value sheet.
  */
 export function HabitQuickAction({ habit, date, value, disabled, compact }: Props) {
   const { t, i18n } = useTranslation()
   const setLog = useSetLogValue()
+  const healthSync = useHealthSync()
   const done = isCompletedValue(habit, value)
   const set = (next: number) => setLog.mutate({ habitId: habit.id, date, value: next })
   const size = compact ? s.compact : ''
 
   if (habit.health_metric) {
     return (
-      <span
+      <button
+        type="button"
         className={`${s.pill} ${s.health} ${done ? s.pillDone : ''} ${size}`}
         style={habitColorStyle(habit.color)}
-        role="img"
-        aria-label={done ? t('health.fromHealthDone') : t('health.fromHealth')}
+        aria-label={done ? t('health.syncDone') : t('health.sync')}
+        disabled={disabled}
+        onClick={() => void healthSync(habit, date)}
       >
         <Heart size={compact ? 15 : 16} fill="currentColor" strokeWidth={0} />
         {done ? <Check size={compact ? 14 : 16} strokeWidth={3} /> : null}
-      </span>
+      </button>
     )
   }
 

@@ -11,40 +11,57 @@ type ConfirmOptions = {
   destructive?: boolean
 }
 
+type ChoiceAction<T extends string> = { value: T; label: string; destructive?: boolean }
+
+type ChooseOptions<T extends string> = {
+  title: string
+  message?: string
+  /** Shown one under another, with "Cancel" at the bottom. */
+  actions: ChoiceAction<T>[]
+}
+
 type ConfirmFn = (options: ConfirmOptions) => Promise<boolean>
+type ChooseFn = <T extends string>(options: ChooseOptions<T>) => Promise<T | null>
 
-const ConfirmContext = createContext<ConfirmFn | null>(null)
+const ChooseContext = createContext<ChooseFn | null>(null)
 
-/** iOS-style alert. `await confirm({...})` resolves to true when the user confirms. */
+const OK = 'ok'
+
+/**
+ * iOS-style alert. `await confirm({...})` resolves to true when the user confirms;
+ * `await choose({...})` resolves to the chosen action, or null on cancel.
+ */
 export function ConfirmProvider({ children }: { children: ReactNode }) {
   const { t } = useTranslation()
-  const [options, setOptions] = useState<ConfirmOptions | null>(null)
+  const [options, setOptions] = useState<ChooseOptions<string> | null>(null)
   const [open, setOpen] = useState(false)
-  const resolver = useRef<((ok: boolean) => void) | null>(null)
+  const resolver = useRef<((value: string | null) => void) | null>(null)
   const { mounted, visible } = usePresence(open, 160)
 
-  const confirm = useCallback<ConfirmFn>((opts) => {
-    resolver.current?.(false)
+  const choose = useCallback(<T extends string>(opts: ChooseOptions<T>) => {
+    resolver.current?.(null)
     setOptions(opts)
     setOpen(true)
-    return new Promise<boolean>((resolve) => {
-      resolver.current = resolve
+    return new Promise<T | null>((resolve) => {
+      resolver.current = resolve as (value: string | null) => void
     })
-  }, [])
+  }, []) as ChooseFn
 
-  const close = (ok: boolean) => {
-    resolver.current?.(ok)
+  const close = (value: string | null) => {
+    resolver.current?.(value)
     resolver.current = null
     setOpen(false)
   }
 
+  const stacked = (options?.actions.length ?? 0) > 1
+
   return (
-    <ConfirmContext value={confirm}>
+    <ChooseContext value={choose}>
       {children}
       {mounted && options
         ? createPortal(
             <div className={`${s.root} ${visible ? s.visible : ''}`}>
-              <div className={s.backdrop} onClick={() => close(false)} />
+              <div className={s.backdrop} onClick={() => close(null)} />
               <div className={s.alert} role="alertdialog" aria-modal="true" aria-labelledby="confirm-title">
                 <div className={s.text}>
                   <h2 id="confirm-title" className={s.title}>
@@ -52,29 +69,60 @@ export function ConfirmProvider({ children }: { children: ReactNode }) {
                   </h2>
                   {options.message ? <p className={s.message}>{options.message}</p> : null}
                 </div>
-                <div className={s.actions}>
-                  <button type="button" className={s.action} onClick={() => close(false)}>
-                    {t('common.cancel')}
-                  </button>
-                  <button
-                    type="button"
-                    className={`${s.action} ${s.primary} ${options.destructive ? s.destructive : ''}`}
-                    onClick={() => close(true)}
-                  >
-                    {options.confirmLabel ?? t('common.done')}
-                  </button>
-                </div>
+                {stacked ? (
+                  <div className={`${s.actions} ${s.stacked}`}>
+                    {options.actions.map((a) => (
+                      <button
+                        key={a.value}
+                        type="button"
+                        className={`${s.action} ${a.destructive ? s.destructive : ''}`}
+                        onClick={() => close(a.value)}
+                      >
+                        {a.label}
+                      </button>
+                    ))}
+                    <button type="button" className={`${s.action} ${s.primary}`} onClick={() => close(null)}>
+                      {t('common.cancel')}
+                    </button>
+                  </div>
+                ) : (
+                  <div className={s.actions}>
+                    <button type="button" className={s.action} onClick={() => close(null)}>
+                      {t('common.cancel')}
+                    </button>
+                    {options.actions.map((a) => (
+                      <button
+                        key={a.value}
+                        type="button"
+                        className={`${s.action} ${s.primary} ${a.destructive ? s.destructive : ''}`}
+                        onClick={() => close(a.value)}
+                      >
+                        {a.label}
+                      </button>
+                    ))}
+                  </div>
+                )}
               </div>
             </div>,
             document.body,
           )
         : null}
-    </ConfirmContext>
+    </ChooseContext>
   )
 }
 
-export function useConfirm(): ConfirmFn {
-  const ctx = useContext(ConfirmContext)
-  if (!ctx) throw new Error('useConfirm outside ConfirmProvider')
+export function useChoose(): ChooseFn {
+  const ctx = useContext(ChooseContext)
+  if (!ctx) throw new Error('useChoose outside ConfirmProvider')
   return ctx
+}
+
+export function useConfirm(): ConfirmFn {
+  const choose = useChoose()
+  const { t } = useTranslation()
+  return useCallback<ConfirmFn>(
+    async ({ title, message, confirmLabel, destructive }) =>
+      (await choose({ title, message, actions: [{ value: OK, label: confirmLabel ?? t('common.done'), destructive }] })) === OK,
+    [choose, t],
+  )
 }

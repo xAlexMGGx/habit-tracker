@@ -344,3 +344,18 @@
   font-variant-numeric: tabular-nums;
   overflow-wrap: anywhere;
 }
+
+/* Health habits: sync button under today's value */
+.healthSync {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 6px;
+  margin: -4px var(--gutter) 16px;
+}
+
+.healthSyncLast {
+  text-align: center;
+  font-size: 13px;
+  color: var(--text-2);
+}

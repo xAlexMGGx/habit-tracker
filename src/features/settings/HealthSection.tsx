@@ -1,10 +1,10 @@
-import { useQueryClient } from '@tanstack/react-query'
 import { formatDistanceToNow } from 'date-fns'
 import { BookOpen, Check, Copy, KeyRound, RefreshCw } from 'lucide-react'
 import { type FormEvent, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { BottomSheet } from '../../components/BottomSheet'
 import { useConfirm } from '../../components/ConfirmProvider'
+import { useRunHealthShortcut } from '../../components/useHealthSync'
 import { useApiTokens, useCreateApiToken, useRevokeApiToken } from '../../data/apiTokens'
 import { useToday } from '../../hooks/useToday'
 import { useDateLocale } from '../../i18n'
@@ -17,9 +17,6 @@ import ui from '../../styles/ui.module.css'
 import s from './Settings.module.css'
 
 const MAX_NAME = 40
-/** The guide asks to give the shortcut exactly this name, so the app can run it. */
-const SHORTCUT_NAME = 'Habit tracker'
-const RUN_SHORTCUT_URL = `shortcuts://run-shortcut?name=${encodeURIComponent(SHORTCUT_NAME)}`
 const HEALTH_URL = `${functionsUrl}/health`
 
 async function copyText(text: string) {
@@ -90,12 +87,12 @@ function GuideSheet({ open, onClose }: { open: boolean; onClose: () => void }) {
         <Steps items={create} />
         <Steps items={list('request')} start={create.length + 1} />
         <CopyBox label={t('health.urlLabel')} value={HEALTH_URL} />
+        <h3 className={s.stepsTitle}>{t('health.guide.habitsTitle')}</h3>
+        <Steps items={list('habits')} />
         <h3 className={s.stepsTitle}>{t('health.guide.testTitle')}</h3>
         <Steps items={list('test')} />
         <h3 className={s.stepsTitle}>{t('health.guide.automateTitle')}</h3>
         <Steps items={list('automate')} />
-        <h3 className={s.stepsTitle}>{t('health.guide.habitsTitle')}</h3>
-        <Steps items={list('habits')} />
       </div>
     </BottomSheet>
   )
@@ -225,22 +222,11 @@ function TokenRow({ token }: { token: ApiToken }) {
 
 export function HealthSection() {
   const { t } = useTranslation()
-  const qc = useQueryClient()
+  const runShortcut = useRunHealthShortcut()
   const tokens = useApiTokens()
   const [keyOpen, setKeyOpen] = useState(false)
   const [guideOpen, setGuideOpen] = useState(false)
   const list = tokens.data ?? []
-
-  // Back from Atajos a few seconds later: show what the shortcut just sent.
-  const refreshOnReturn = () => {
-    const refresh = () => {
-      if (document.visibilityState !== 'visible') return
-      document.removeEventListener('visibilitychange', refresh)
-      void qc.invalidateQueries({ queryKey: ['habit_logs'] })
-      void qc.invalidateQueries({ queryKey: ['api_tokens'] })
-    }
-    document.addEventListener('visibilitychange', refresh)
-  }
 
   return (
     <div className={ui.section}>
@@ -255,10 +241,10 @@ export function HealthSection() {
           <span className={ui.rowLabel}>{t('health.guideRow')}</span>
         </button>
         {list.length ? (
-          <a className={`${ui.rowButton} ${s.linkRow}`} href={RUN_SHORTCUT_URL} onClick={refreshOnReturn}>
+          <button type="button" className={ui.rowButton} onClick={runShortcut}>
             <RefreshCw size={20} className={s.rowIcon} />
             <span className={ui.rowLabel}>{t('health.runNow')}</span>
-          </a>
+          </button>
         ) : null}
         {list.map((token) => (
           <TokenRow key={token.id} token={token} />

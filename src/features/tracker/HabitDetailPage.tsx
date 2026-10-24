@@ -1,10 +1,13 @@
-import { ChevronLeft, Minus, Pencil } from 'lucide-react'
+import { formatDistanceToNow } from 'date-fns'
+import { ChevronLeft, Minus, Pencil, RefreshCw } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useLocation, useNavigate, useParams } from 'react-router'
 import { HabitQuickAction } from '../../components/HabitQuickAction'
 import { PageHeader } from '../../components/PageHeader'
+import { useHealthSync } from '../../components/useHealthSync'
 import { HabitIcon, Segmented, Spinner } from '../../components/controls'
+import { useApiTokens } from '../../data/apiTokens'
 import { useHabits } from '../../data/habits'
 import { useHabitLogs, useLogIndex, useSetLogValue } from '../../data/logs'
 import { useToday } from '../../hooks/useToday'
@@ -52,20 +55,49 @@ function TodayControl({ habit, value, today }: { habit: Habit; value: number; to
   return (
     <div className={s.todayControl}>
       <span className={s.todayLabel}>{t('common.today')}</span>
-      <button
-        type="button"
-        className={s.minus}
-        aria-label={t('tracker.subtract', { step: num(step) })}
-        disabled={value <= 0}
-        onClick={() => setLog.mutate({ habitId: habit.id, date: today, value: Math.max(0, Math.round((value - step) * 100) / 100) })}
-      >
-        <Minus size={18} strokeWidth={2.6} />
-      </button>
+      {/* Health habits change by hand only in the value sheet, like in the Agenda. */}
+      {habit.health_metric ? null : (
+        <button
+          type="button"
+          className={s.minus}
+          aria-label={t('tracker.subtract', { step: num(step) })}
+          disabled={value <= 0}
+          onClick={() => setLog.mutate({ habitId: habit.id, date: today, value: Math.max(0, Math.round((value - step) * 100) / 100) })}
+        >
+          <Minus size={18} strokeWidth={2.6} />
+        </button>
+      )}
       <button type="button" className={s.todayValue} onClick={() => setEditing(true)}>
         {label}
       </button>
       <HabitQuickAction habit={habit} date={today} value={value} />
       <ValueSheet habit={editing ? habit : null} date={today} value={value} onClose={() => setEditing(false)} />
+    </div>
+  )
+}
+
+/** Health habits: run the shortcut from here, with the time of the last sync. */
+function HealthSyncButton({ habit, today }: { habit: Habit; today: DateStr }) {
+  const { t } = useTranslation()
+  const locale = useDateLocale()
+  const sync = useHealthSync()
+  const last = (useApiTokens().data ?? [])
+    .map((k) => k.last_used_at)
+    .filter((d): d is string => d != null)
+    .sort()
+    .at(-1)
+
+  return (
+    <div className={s.healthSync}>
+      <button type="button" className={ui.btnSecondary} onClick={() => void sync(habit, today)}>
+        <RefreshCw size={18} />
+        {t('health.sync')}
+      </button>
+      <span className={s.healthSyncLast}>
+        {last
+          ? t('health.lastSync', { when: formatDistanceToNow(new Date(last), { addSuffix: true, locale }) })
+          : t('health.neverSynced')}
+      </span>
     </div>
   )
 }
@@ -102,6 +134,7 @@ function Detail({ habit }: { habit: Habit }) {
         ) : null}
       </div>
       {actionable && habit.type !== 'boolean' ? <TodayControl habit={habit} value={logs.get(today) ?? 0} today={today} /> : null}
+      {habit.health_metric ? <HealthSyncButton habit={habit} today={today} /> : null}
 
       <div className={s.detailCard}>
         <HabitViz habit={habit} logs={logs} today={today} size="full" config={config} viz={viz} />

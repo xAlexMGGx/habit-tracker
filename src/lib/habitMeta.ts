@@ -55,8 +55,12 @@ export function formatPercent(value: number, lang: string): string {
   return new Intl.NumberFormat(lang, { style: 'percent', maximumFractionDigits: 0 }).format(value)
 }
 
-/** Health metrics a habit can be filled in from (phase 6), in the order the form shows them. */
-export const HEALTH_METRICS: HealthMetric[] = ['steps', 'sleep', 'workouts']
+/**
+ * Health metrics the form offers (phase 6): only steps. Atajos can't read workouts, and sleep
+ * was dropped after trying it. The server still accepts both, so a habit that already uses
+ * one keeps working.
+ */
+export const HEALTH_METRICS: HealthMetric[] = ['steps']
 
 /** Starting target, step of the ± buttons and icon when a habit switches to a Health metric. */
 export const HEALTH_DEFAULTS: Record<HealthMetric, { target: number; step: number; icon: string }> = {

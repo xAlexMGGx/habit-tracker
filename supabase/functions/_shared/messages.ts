@@ -48,7 +48,7 @@ export function healthTexts(lang: Lang) {
     workouts: (n: number) =>
       es ? (n === 1 ? '1 entrenamiento' : `${n} entrenamientos`) : n === 1 ? '1 workout' : `${n} workouts`,
     noTime: es
-      ? '⚠️ Las fechas del sueño no llevan hora: en el atajo, activa «Incluir hora» en el formato ISO 8601.'
-      : '⚠️ Sleep dates have no time: in the shortcut, turn on “Include ISO 8601 Time”.',
+      ? '⚠️ Las fechas del sueño no llevan hora: en el atajo, en su «Formato» ISO 8601, activa «Hora».'
+      : '⚠️ Sleep dates have no time: in the shortcut, turn on the time in their ISO 8601 “Format”.',
   }
 }

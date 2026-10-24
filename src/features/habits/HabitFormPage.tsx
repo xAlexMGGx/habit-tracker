@@ -180,6 +180,9 @@ function HabitForm({ habit }: { habit: Habit | null }) {
     return { habit: h, logs: sampleLogs(h, today) }
   }, [today, form.type, form.icon, form.color, form.unit, targetNumber, form.frequency, form.weekdays, form.planned, form.times, form.interval])
 
+  // Health metrics to choose from: the offered ones plus the one this habit already uses.
+  const metricOptions = [...new Set<HealthMetric>([...HEALTH_METRICS, ...(habit?.health_metric ? [habit.health_metric] : [])])]
+
   const vizOptions = availableViz(form.type)
   const vizConfig = buildVizConfig(form)
 
@@ -386,12 +389,12 @@ function HabitForm({ habit }: { habit: Habit | null }) {
                 { value: 'health', label: t('health.form.health') },
               ]}
             />
-            {form.healthMetric ? (
+            {form.healthMetric && metricOptions.length > 1 ? (
               <Segmented<HealthMetric>
                 value={form.healthMetric}
                 onChange={changeHealthMetric}
                 ariaLabel={t('health.form.metric')}
-                options={HEALTH_METRICS.map((m) => ({ value: m, label: t(`health.metrics.${m}`) }))}
+                options={metricOptions.map((m) => ({ value: m, label: t(`health.metrics.${m}`) }))}
               />
             ) : null}
           </div>

@@ -466,7 +466,7 @@
   },
   "health": {
     "title": "Health",
-    "hint": "Fills in your steps, sleep and workout habits by themselves with the Fitbit data that reaches Apple Health, through a Shortcuts shortcut that runs every day.",
+    "hint": "Fills in your steps habits by themselves with the Fitbit data that reaches Apple Health, through a Shortcuts shortcut that runs several times a day.",
     "createKeyRow": "Create a key for the shortcut",
     "guideRow": "How to build the shortcut",
     "runNow": "Sync now (opens Shortcuts)",
@@ -517,13 +517,11 @@
       "metric": "Health metric",
       "manualHint": "You log it in the Agenda.",
       "hint": {
-        "steps": "The day's steps according to Health. Filled in by the shortcut in Settings → Health.",
+        "steps": "This habit takes each day's steps from the iPhone's Health app. Filled in by the shortcut in Settings → Health.",
         "sleep": "Hours asleep according to Health; a night counts for the day you wake up. Filled in by the shortcut in Settings → Health.",
         "workouts": "The day's workouts according to Health. Filled in by the shortcut in Settings → Health."
       }
     },
-    "fromHealth": "Filled in from Health",
-    "fromHealthDone": "Done according to Health",
     "byHand": "changed by hand",
     "listTag": "❤️ Health",
     "manualNote": "You changed it by hand. Health says {{value}}.",
@@ -536,37 +534,43 @@
       "title": "Health shortcut",
       "beforeTitle": "Before you start",
       "before": [
-        "Open the Health app → Browse → Steps and scroll down to “Data Sources & Access”: your Fitbit’s Google app should be there. Check “Sleep” and “Workouts” too.",
+        "Open the Health app → Browse → Steps and scroll down to “Data Sources & Access”: your Fitbit’s Google app should be there.",
         "If your iPhone also counts steps, tap “Edit” on that screen and drag the Fitbit app to the top, so Health doesn’t count them twice."
       ],
       "createTitle": "Build the shortcut (Shortcuts app)",
       "create": [
         "Tap + to create a new shortcut. Tap its name at the top and call it exactly `Habit tracker`.",
         "Steps: add “Find Health Samples” with the filters “Type is Steps” and “Start Date is in the last 4 days”, and “Group By: Day”.",
-        "Add “Repeat with Each” and, inside it, a “Text” action with `Start Date|Value`: each one is a variable from “Repeat Item” (tap it and pick the detail), separated by a vertical bar. For the date, pick the “ISO 8601” format and turn on “Include ISO 8601 Time”.",
-        "After “End Repeat”, add “Combine Text” with “Repeat Results” and “New Lines”.",
-        "Sleep: repeat steps 2 to 4 with “Type is Sleep Analysis”, not grouped, and the text `Start Date|End Date|Value|Source` (both dates in ISO 8601 with time).",
-        "Workouts: repeat steps 2 to 4 with “Type is Workouts”, not grouped, and the text `Start Date|Source`."
+        "Add “Repeat with Each” (search for “Repeat”; it’s not the one that repeats a number of times). It should read “Repeat with each item in Health Samples”, with “End Repeat” below.",
+        "Between those two lines, add “Text”. In it, tap “Select Variable” → “Repeat Item”. Tap the “Repeat Item” that appeared and choose “Start Date”; in that same menu, at the bottom, under “Format” choose “ISO 8601” and turn on the time. Type a vertical bar `|` and do the same choosing “Value”. It should read `Start Date|Value`.",
+        "After “End Repeat”, add “Combine Text” with “Repeat Results” and “New Lines”."
       ],
       "request": [
-        "Add “Get Contents of URL” with the address below. Tap “Show More”: method `POST`; under “Headers”, add `Authorization` with the value `Bearer ` followed by your key (with a space in between); under “Request Body”, choose “JSON” and add three text fields: `steps`, `sleep` and `workouts`. For each value, tap “Select Variable” and pick its “Combine Text” action.",
-        "Add “Show Notification” with “Contents of URL”: it tells you what arrived."
-      ],
-      "testTitle": "Try it",
-      "test": [
-        "Tap ▶ in the shortcut. The first time, iOS asks to read Steps, Sleep and Workouts and to connect to supabase.co: allow it (for the connection, “Always Allow”).",
-        "You should get a notification like “Habit tracker ✓ Today: 8,432 steps · 7 h 15 min of sleep · 1 workout”. Here in Settings you’ll see the time and data of the last sync."
-      ],
-      "automateTitle": "Make it run by itself",
-      "automate": [
-        "In Shortcuts → Automation → + → “Time of Day”: 23:00, “Daily” and “Run Immediately”. Tap “Next” and choose `Habit tracker`.",
-        "Create another one at 9:00. While the iPhone is locked, iOS doesn’t let shortcuts read Health and the night run may fail; since the shortcut always sends the last few days, the next run fills it in."
+        "Add “Get Contents of URL” with the address below. Tap “Show More”: method `POST`; under “Headers”, add `Authorization` with the value `Bearer <key>`, replacing `<key>` with yours (with a space after `Bearer`); under “Request Body”, choose “JSON” and add a text field `steps`. For its value, tap “Select Variable” and pick the “Combine Text” action.",
+        "Add “If” with the condition “Shortcut Input” “has any value” and, inside it (before “Otherwise”), “Show Notification” with “Contents of URL”. That way it only notifies you when you sync from the app or with the 23:00 automation."
       ],
       "habitsTitle": "Your habits",
       "habits": [
-        "In My habits, create or edit a quantitative habit and under “Source” choose “Health” and the metric. It fills itself in on every sync.",
-        "If you change a day by hand, your value stays. To go back to Health’s, open that day and tap “Use the Health value”."
+        "In My habits, create or edit a quantitative habit and under “Source” choose “Health”: it takes each day’s steps. It fills itself in on every sync (today and the two days before).",
+        "If you change a day by hand, your value stays. To go back to Health’s, open that day and tap “Use the Health value”, or tap the ❤️ and choose “Sync and overwrite”."
+      ],
+      "testTitle": "Try it",
+      "test": [
+        "In the app, go to Settings → Health → “Sync now” (or tap a habit’s ❤️). Shortcuts opens and, the first time, asks to read Steps and to connect to supabase.co: allow it (for the connection, “Always Allow”).",
+        "You should get a notification like “Habit tracker ✓ Today: 8,432 steps”. Go back with “◀ Habit tracker” at the top left: you’ll see the data and time of the last sync."
+      ],
+      "automateTitle": "Make it run by itself",
+      "automate": [
+        "Shortcuts → Automation → + → “Time of Day”: 23:00, “Daily” and “Run Immediately” → “Next” → “New Blank Automation”. Add “Text” with the word `notify` and, below it, “Run Shortcut” with `Habit tracker` (its input must be that “Text”). This one notifies you with the day’s summary.",
+        "Create more at other times, for example 9:00, 12:00, 15:00, 18:00 and 21:00, choosing the `Habit tracker` shortcut directly: those run silently.",
+        "While the iPhone is locked, iOS doesn’t let shortcuts read Health and a run may fail; since the shortcut always sends the last few days, the next one fills it in."
       ]
-    }
+    },
+    "sync": "Sync with Health",
+    "syncDone": "Done according to Health. Sync with Health",
+    "syncTitle": "Sync with Health",
+    "syncManualMessage": "You changed this day by hand. Should Health’s value replace it?",
+    "syncOverwrite": "Sync and overwrite",
+    "syncOnly": "Just sync"
   }
 }

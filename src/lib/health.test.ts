@@ -246,7 +246,7 @@ describe('healthReply', () => {
     expect(healthReply(parse(body), 0, TODAY, 'es').message).toMatch(/no tienes hábitos que usen Salud/)
     const empty = parse({ sleep: '2026-10-23|2026-10-24|Dormido|Fitbit' })
     expect(healthReply(empty, 1, TODAY, 'es')).toEqual({
-      message: expect.stringMatching(/no ha llegado ningún dato[\s\S]*Incluir hora/),
+      message: expect.stringMatching(/no ha llegado ningún dato[\s\S]*activa «Hora»/),
       lastSync: null,
     })
   })

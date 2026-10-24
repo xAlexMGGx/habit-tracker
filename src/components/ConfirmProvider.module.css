@@ -82,3 +82,13 @@
 .destructive {
   color: var(--danger);
 }
+
+/* Three or more choices: one under another, "Cancel" last */
+.stacked {
+  grid-template-columns: 1fr;
+}
+
+.stacked .action + .action {
+  border-left: none;
+  border-top: 0.5px solid var(--separator);
+}

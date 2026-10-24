@@ -290,15 +290,17 @@ Las notificaciones son **por dispositivo**: actívalas en cada iPhone. Al cerrar
 
 ## 10. Salud / Fitbit (fase 6)
 
-Los hábitos de **pasos**, **sueño** y **entrenamientos** se rellenan solos con los datos de la Fitbit:
+Los hábitos de **pasos** se rellenan solos con los datos de la Fitbit:
 
-Fitbit → app de Google → **Salud** del iPhone → **un atajo de Atajos** (cada día, solo) → Edge Function `health` → hábitos.
+Fitbit → app de Google → **Salud** del iPhone → **un atajo de Atajos** (varias veces al día, solo) → Edge Function `health` → hábitos.
 
 El atajo lee Salud y envía los datos de los últimos días con una **clave personal** que solo sirve para eso. En la base de datos solo se guarda el *hash* de la clave, y puedes revocarla desde Ajustes. De los datos de Salud solo se guarda el total de cada día en los hábitos que lo usan.
 
+> Solo se usan los **pasos**. Los entrenamientos no se pueden leer desde Atajos (solo registrarlos) y el sueño se descartó al probarlo.
+
 ### 10.1 Comprueba que los datos llegan a Salud
 
-En el iPhone: **Salud → Explorar → Pasos → Fuentes de datos y acceso**. Tiene que aparecer la app de Google de tu Fitbit. Mira también **Sueño** y **Entrenamientos**. Si no aparece, el resto no puede funcionar: actívalo primero en la app de Google.
+En el iPhone: **Salud → Explorar → Pasos → Fuentes de datos y acceso**. Tiene que aparecer la app de Google de tu Fitbit. Si no aparece, el resto no puede funcionar: actívalo primero en la app de Google.
 
 Si el iPhone también cuenta pasos, en esa pantalla pulsa **Editar** y pon la Fitbit la primera, para que Salud no los cuente dos veces.
 
@@ -325,32 +327,34 @@ No necesita secretos nuevos. `--no-verify-jwt` es necesario porque el atajo no i
 
 Sigue **Ajustes → Salud → Cómo crear el atajo**, que tiene los pasos completos y la dirección para copiar. En resumen, en la app **Atajos** creas un atajo llamado `Habit tracker` que:
 
-1. Busca en Salud los **pasos** (agrupados por día), el **análisis del sueño** y los **entrenamientos** de los últimos 4 días.
-2. Convierte cada muestra en una línea de texto con sus fechas en ISO 8601 con hora:
-   - pasos: `Fecha de inicio|Valor`
-   - sueño: `Fecha de inicio|Fecha de finalización|Valor|Fuente`
-   - entrenamientos: `Fecha de inicio|Fuente`
-3. Hace un `POST` a `https://TU-REF.supabase.co/functions/v1/health` con la cabecera `Authorization: Bearer ht_…` y un JSON con los campos de texto `steps`, `sleep` y `workouts`.
-4. Muestra la respuesta como notificación (p. ej. *Habit tracker ✓ Hoy: 8432 pasos · 7 h 15 min de sueño · 1 entrenamiento*).
-
-Ejecútalo una vez a mano con ▶: iOS pedirá permiso para leer Salud y para conectarse a `supabase.co` (elige **Permitir siempre**).
+1. Busca en Salud (**Buscar muestras médicas**) los **pasos** de los últimos 4 días, agrupados por día.
+2. Convierte cada día en una línea de texto `Fecha de inicio|Valor`, con la fecha en ISO 8601 con hora (en el «Formato» de la fecha, «ISO 8601» y «Hora» activada).
+3. Hace un `POST` a `https://TU-REF.supabase.co/functions/v1/health` con la cabecera `Authorization` y el valor `Bearer <clave>`, y un JSON con el campo de texto `steps`.
+4. **Si** recibe una entrada, muestra la respuesta como notificación (p. ej. *Habit tracker ✓ Hoy: 8432 pasos*). La app le pasa una entrada al sincronizar desde ella, y la automatización de las 23:00 también; las demás no, y van en silencio.
 
 > Las otras personas pueden hacer lo mismo con su propia clave. También puedes compartir tu atajo por enlace de iCloud, y cada persona cambia la clave por la suya.
 
-### 10.6 Que se ejecute solo
+### 10.6 Tus hábitos
 
-**Atajos → Automatización → + → Hora del día**: 23:00, **Diariamente**, **Ejecutar inmediatamente** → **Siguiente** → `Habit tracker`. Crea otra igual a las **9:00**.
+En **Mis hábitos**, crea o edita un hábito **cuantitativo** y en **Fuente** elige **Salud**: tomará los pasos de cada día. La unidad la pone la app y la meta empieza en 10.000 pasos. Puedes convertir un hábito que ya tengas y conserva su historial.
 
-Hacen falta las dos porque iOS no deja leer Salud con el iPhone bloqueado, así que la de la noche puede fallar. Como el atajo envía siempre los últimos días, la siguiente ejecución lo completa. Para sincronizar en cualquier momento: **Ajustes → Salud → Sincronizar ahora**, o ejecuta el atajo.
-
-### 10.7 Tus hábitos
-
-En **Mis hábitos**, crea o edita un hábito **cuantitativo** y en **Fuente** elige **Salud** y la métrica. La unidad la pone la app (pasos, h, entrenamientos) y la meta empieza en 10.000 pasos, 7 h o 1 entrenamiento. Puedes convertir un hábito que ya tengas y conserva su historial.
-
-- Los hábitos de Salud llevan un ❤️ en vez del botón «+N».
+- Cada sincronización rellena **hoy y los dos días anteriores**, en los días en que el hábito toca (en los de «X veces por semana», cualquier día). Los días anteriores, si hacen falta, se ponen a mano.
 - Si cambias un día a mano, **se queda tu valor**. Para volver al de Salud, abre ese día y pulsa **Usar el dato de Salud**.
-- El sueño de una noche cuenta para el **día en que te despiertas**.
-- Solo se rellenan los días en que el hábito toca (en los de «X veces por semana», cualquier día).
+- El ❤️ de los hábitos de Salud (en la Agenda y en Seguimiento) **sincroniza**: abre Atajos y ejecuta el atajo. Si ese día lo cambiaste a mano, pregunta antes: **Sincronizar y sobrescribir** (vuelve al dato de Salud), **Solo sincronizar** o **Cancelar**. En el detalle del hábito tienes también el botón **Sincronizar con Salud**, con la hora de la última sincronización.
+- Después de sincronizar, vuelve a la app con **◀ Habit tracker**, arriba a la izquierda.
+
+### 10.7 Probarlo
+
+En la app, **Ajustes → Salud → Sincronizar ahora** (o toca un ❤️). La primera vez, iOS pedirá permiso para leer Salud y para conectarse a `supabase.co`: elige **Permitir siempre**. Debe llegar la notificación con los datos de hoy, y en Ajustes verás la última sincronización.
+
+### 10.8 Que se ejecute solo
+
+En **Atajos → Automatización → + → Hora del día**, con **Diariamente** y **Ejecutar inmediatamente**:
+
+- **23:00, con notificación**: tras **Siguiente**, elige **Nuevo atajo en blanco**. Añade **Texto** con la palabra `notificar` y, debajo, **Ejecutar atajo** con `Habit tracker` (su entrada debe ser ese Texto). Te avisa con el resumen del día.
+- **Las demás, en silencio** (p. ej. 9:00, 12:00, 15:00, 18:00 y 21:00): tras **Siguiente**, elige directamente el atajo `Habit tracker`.
+
+iOS no deja leer Salud con el iPhone bloqueado, así que alguna ejecución puede fallar. Como el atajo envía siempre los últimos días, la siguiente lo completa.
 
 ---
 
@@ -415,7 +419,7 @@ src/
 - **"No se ha podido crear la clave"** en Ajustes → Salud → falta la migración del paso 10.2.
 - **El atajo da error en «Obtener contenido de URL»** → si es un 404, la función `health` no está desplegada (paso 10.3). Revisa también la dirección.
 - **La notificación dice que la clave no es válida** → se ha revocado o está mal copiada. La cabecera debe ser exactamente `Authorization` con el valor `Bearer ht_…` (con un espacio después de `Bearer`).
-- **"No ha llegado ningún dato de Salud"** → Atajos no tiene permiso para leer Salud: en el iPhone, **Ajustes → Privacidad y seguridad → Salud → Atajos** y activa Pasos, Sueño y Entrenamientos. Comprueba también el paso 10.1.
-- **"Las fechas del sueño no llevan hora"** → en el atajo, en las fechas del sueño, activa «Incluir hora» del formato ISO 8601.
+- **"No ha llegado ningún dato de Salud"** → Atajos no tiene permiso para leer Salud: en el iPhone, **Ajustes → Privacidad y seguridad → Salud → Atajos** y activa Pasos. Comprueba también el paso 10.1.
 - **Los pasos salen dobles** → en Salud, pon la Fitbit la primera en las fuentes de datos de Pasos (paso 10.1).
-- **La automatización de la noche no ha funcionado** → es normal si el iPhone estaba bloqueado; la de la mañana lo completa. En Supabase, **Edge Functions → health → Logs** muestra cuántas líneas llegaron en cada sincronización.
+- **Alguna automatización no ha funcionado** → es normal si el iPhone estaba bloqueado; la siguiente lo completa.
+- **No llega la notificación al sincronizar desde la app** → revisa la acción «Si» del atajo («Entrada del atajo» «tiene algún valor») y que «Mostrar notificación» esté dentro. En Supabase, **Edge Functions → health → Logs** muestra cuántas líneas llegaron en cada sincronización.

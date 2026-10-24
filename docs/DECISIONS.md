@@ -105,7 +105,7 @@ Complementa a [SPEC.md](../SPEC.md). Cada punto se acordó con el usuario o es u
 
 ## Salud (fase 6)
 
-- **Cadena:** Fitbit → app de Google → Salud → atajo de Atajos (automatización a las 23:00 y a las 9:00) → Edge Function `health` → `habit_logs`.
+- **Cadena:** Fitbit → app de Google → Salud → atajo de Atajos (varias automatizaciones al día) → Edge Function `health` → `habit_logs`.
 - **El atajo se crea a mano** siguiendo la guía de Ajustes → Salud: los atajos solo se pueden instalar con un toque si están firmados desde un iPhone o un Mac. Una vez hecho, se puede compartir por enlace de iCloud.
 - **Claves personales (`api_tokens`):**
   - La clave (`ht_` + 32 bytes aleatorios) se genera en el iPhone. En la base de datos solo se guardan su hash SHA-256 y los 8 primeros caracteres, para reconocerla en la lista.
@@ -116,23 +116,28 @@ Complementa a [SPEC.md](../SPEC.md). Cada punto se acordó con el usuario o es u
   - Envía 4 días, pero solo se escriben **hoy y los 2 anteriores**: así el primero, que puede estar a medias, no cuenta.
   - Los números se aceptan como los escribe el iPhone en español o en inglés ("8.432", "7,5").
   - Si dos fuentes cuentan lo mismo (iPhone y Fitbit), se toma la mayor, no la suma.
-- **Métricas** (elegidas: solo las tres del SPEC):
+- **Métricas:**
   - **Pasos:** total del día.
-  - **Sueño:** horas dormidas, sin contar «en cama» ni «despierto»; los tramos que se solapan se cuentan una vez. **La noche cuenta para el día en que te despiertas**: un tramo que termina a partir de las 18:00 ya es de la noche siguiente; una siesta antes de las 18:00 cuenta ese día.
-  - **Entrenamientos:** número de entrenamientos del día.
+  - **Sueño: descartado** al probarlo (2026-10-24): no funcionaba y no hace falta en los hábitos. El servidor lo sigue entendiendo: horas dormidas, sin contar «en cama» ni «despierto», y la noche cuenta para el día en que te despiertas (un tramo que termina a partir de las 18:00 ya es de la noche siguiente).
+  - **Entrenamientos: descartados** al probarlo (2026-10-24). Atajos solo tiene «Registrar entrenamiento», no una acción para leerlos, y «Buscar muestras médicas» no los incluye. El servidor los sigue aceptando y un hábito que ya los use conserva la métrica en el formulario, pero no se ofrecen.
 - **Hábitos de Salud: cuantitativos con cifra y meta** (elegido), p. ej. «8432/10.000 pasos», con todas las visualizaciones.
-  - En el formulario, «Fuente: Manual / Salud» solo aparece en los cuantitativos. La unidad la pone la app y la meta empieza en 10.000 pasos, 7 h o 1 entrenamiento.
+  - En el formulario, «Fuente: Manual / Salud» solo aparece en los cuantitativos. **Solo se ofrecen los pasos**: al elegir Salud no hay que elegir métrica, y un texto debajo explica que el hábito tomará los pasos de Salud. Un hábito que ya use otra métrica la conserva y ve el selector. La unidad la pone la app y la meta empieza en 10.000 pasos.
   - Un hábito existente se puede pasar a Salud y conserva su historial. Las 3 últimas fechas se sobrescriben con lo que diga Salud, salvo las cambiadas a mano.
-  - Se rellenan los días en que el hábito toca según su plan; en «X veces por semana», todos los días.
-  - En lugar del botón «+N» llevan un ❤️, que se pone del color del hábito con ✓ cuando se cumple. Cambiar el valor a mano se hace a propósito, en la hoja del día.
+  - Se rellenan los días en que el hábito toca según su plan; en «X veces por semana», todos los días. Los días anteriores a la ventana de 3 días no se rellenan aunque el hábito empiece antes (confirmado: los días anteriores se ponen a mano).
+  - En lugar del botón «+N» llevan un ❤️, que se pone del color del hábito con ✓ cuando se cumple. Cambiar el valor a mano se hace a propósito, en la hoja del día; por eso en el detalle de Seguimiento tampoco tienen botón «−».
 - **Cambios a mano: manda el valor manual** (elegido), con un botón para volver al de Salud.
   - `habit_logs.manual` marca el día y `health_value` guarda lo último que llegó de Salud. La sincronización actualiza `health_value`, pero no toca `value` mientras el día sea manual.
   - En la Agenda pone «cambiado a mano». La hoja del día dice qué dice Salud y ofrece «Usar el dato de Salud» o, si aún no ha llegado nada, «Quitar mi valor y esperar a Salud».
   - Un 0 puesto a mano se guarda como fila (no se borra), para que la sincronización no lo rellene.
-- **Sincronizar ahora:** Ajustes → Salud abre el atajo `Habit tracker` (`shortcuts://run-shortcut`). Al volver, la app recarga los datos.
+- **Sincronizar desde la app** (pedido tras probarlo): abre Atajos y ejecuta `Habit tracker` (`shortcuts://run-shortcut`). Al volver con «◀ Habit tracker», la app recarga los datos. Está en:
+  - Ajustes → Salud → «Sincronizar ahora»;
+  - el ❤️ de cada hábito de Salud (Agenda, tarjeta y detalle de Seguimiento);
+  - el botón «Sincronizar con Salud» del detalle, con la hora de la última sincronización.
+  - Si ese día se cambió a mano, el ❤️ y el botón preguntan: «Sincronizar y sobrescribir» (primero vuelve al dato de Salud, porque el servidor nunca pisa un valor manual), «Solo sincronizar» o «Cancelar». Si no, sincronizan sin preguntar.
+- **Notificación del atajo:** solo cuando recibe una entrada (acción «Si»). La app se la pasa (`input=text&text=app`), y la automatización de las 23:00 también, con «Ejecutar atajo» y un texto. El resto de automatizaciones (p. ej. 9, 12, 15, 18 y 21 h) van en silencio.
 - **Limitaciones:**
   - No es en tiempo real: los datos llegan cuando se ejecuta el atajo.
-  - Con el iPhone bloqueado, iOS no deja leer Salud y la automatización puede fallar. Por eso hay dos automatizaciones y se envían varios días.
+  - Con el iPhone bloqueado, iOS no deja leer Salud y alguna automatización puede fallar. Por eso hay varias y se envían varios días.
 
 ## Seguimiento (fase 2)
 
